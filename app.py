@@ -6,7 +6,7 @@ import pydeck as pdk
 import streamlit as st
 
 # ==========================================
-# 1. PAGE CONFIGURATION & VIBRANT ANIMATED THEME
+# 1. PAGE CONFIGURATION & VIBRANT MOVING THEME
 # ==========================================
 st.set_page_config(
     page_title="AeroScape GeoAI | CSRE IIT Bombay",
@@ -17,56 +17,57 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* High-Performance Smoothly Moving Animated Background */
-    @keyframes vibrantFlow {
+    /* Vibrant, Smoothly Moving Colorful Background Theme */
+    @keyframes colorFlow {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
     
     .stApp {
-        background: linear-gradient(-45deg, #030712, #0f172a, #1e1b4b, #311042);
+        background: linear-gradient(-45deg, #1e3a8a, #0284c7, #0d9488, #4f46e5, #7c3aed);
         background-size: 400% 400%;
-        animation: vibrantFlow 8s ease infinite;
-        color: #f8fafc;
+        animation: colorFlow 10s ease infinite;
+        color: #0f172a;
     }
     
-    /* Frosted Glass Sidebar */
+    /* Clean Glassmorphic Sidebar */
     .stSidebar {
-        background-color: rgba(15, 23, 42, 0.95) !important;
+        background-color: rgba(255, 255, 255, 0.9) !important;
         backdrop-filter: blur(16px);
-        border-right: 1px solid rgba(56, 189, 248, 0.3);
+        border-right: 1px solid rgba(2, 132, 199, 0.3);
     }
     
-    /* Glowing Glassmorphic Cards */
+    /* Crisp Glass Cards */
     .glass-card {
-        background: rgba(30, 41, 59, 0.75);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(56, 189, 248, 0.4);
+        border: 1px solid rgba(2, 132, 199, 0.3);
         padding: 24px;
         border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         margin-bottom: 20px;
+        color: #0f172a;
     }
     
     /* Hero Title */
     .hero-title {
         font-size: 2.8rem;
         font-weight: 900;
-        background: linear-gradient(90deg, #38bdf8, #818cf8, #f43f5e);
+        background: linear-gradient(90deg, #1e40af, #0284c7, #7c3aed);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         letter-spacing: -0.5px;
     }
     
     .badge-iit {
-        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        background: linear-gradient(135deg, #1e40af, #3b82f6);
         color: #ffffff;
         padding: 6px 16px;
         border-radius: 20px;
         font-weight: 700;
         font-size: 0.85rem;
-        box-shadow: 0 0 20px rgba(124, 58, 237, 0.6);
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
     }
     </style>
 """,
@@ -75,10 +76,9 @@ st.markdown(
 
 
 # ==========================================
-# 2. PURE DYNAMIC API ENGINES (Zero Hardcoding)
+# 2. PURE DYNAMIC API ENGINES
 # ==========================================
 def fetch_location_coordinates(location_name):
-  """Dynamically queries live OpenStreetMap Nominatim API for exact area polygons/bounding"""
   try:
     query = urllib.parse.quote(location_name)
     url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=1"
@@ -90,13 +90,10 @@ def fetch_location_coordinates(location_name):
       if data:
         lat = float(data[0]["lat"])
         lon = float(data[0]["lon"])
-        boundingbox = data[0].get(
-            "boundingbox", [lat - 0.01, lat + 0.01, lon - 0.01, lon + 0.01]
-        )
-        return lat, lon, data[0]["display_name"], boundingbox, True
+        return lat, lon, data[0]["display_name"], True
   except Exception:
     pass
-  return None, None, location_name, None, False
+  return None, None, location_name, False
 
 
 def fetch_openmeteo_data(lat, lon):
@@ -149,13 +146,12 @@ def generate_geospatial_report(payload):
 if "assessment_run" not in st.session_state:
   st.session_state.assessment_run = True
 if "payload" not in st.session_state:
-  lat, lon, addr, bbox, success = fetch_location_coordinates("Miyapur, Hyderabad")
+  lat, lon, addr, success = fetch_location_coordinates("Miyapur, Hyderabad")
   if not success:
-    lat, lon, addr, bbox = (
+    lat, lon, addr = (
         17.4968,
         78.3644,
         "Miyapur, Hyderabad, Telangana, India",
-        [17.47, 17.52, 78.34, 78.39],
     )
   weather = fetch_openmeteo_data(lat, lon)
   uhi = calculate_advanced_uhi_stress(
@@ -165,7 +161,6 @@ if "payload" not in st.session_state:
       "location": "Miyapur, Hyderabad",
       "full_address": addr,
       "coordinates": {"lat": lat, "lon": lon},
-      "bounding_box": bbox,
       "atmospheric_telemetry": weather,
       "satellite_ndvi": 0.58,
       "uhi_surface_metrics": uhi,
@@ -191,7 +186,7 @@ if st.sidebar.button("🚀 Run Precision Spatial Analysis", type="primary"):
   with st.spinner(
       "Querying live OpenStreetMap vectors and executing UHI physics..."
   ):
-    lat, lon, addr, bbox, success = fetch_location_coordinates(target_location)
+    lat, lon, addr, success = fetch_location_coordinates(target_location)
     if success:
       weather = fetch_openmeteo_data(lat, lon)
       uhi_results = calculate_advanced_uhi_stress(
@@ -202,7 +197,6 @@ if st.sidebar.button("🚀 Run Precision Spatial Analysis", type="primary"):
           "location": target_location,
           "full_address": addr,
           "coordinates": {"lat": lat, "lon": lon},
-          "bounding_box": bbox,
           "atmospheric_telemetry": weather,
           "satellite_ndvi": mock_ndvi,
           "uhi_surface_metrics": uhi_results,
@@ -212,9 +206,7 @@ if st.sidebar.button("🚀 Run Precision Spatial Analysis", type="primary"):
       )
       st.rerun()
     else:
-      st.sidebar.error(
-          "Location not resolved. Please input a specific locality name."
-      )
+      st.sidebar.error("Location not resolved. Please input a specific locality.")
 
 
 # ==========================================
@@ -240,36 +232,36 @@ if st.session_state.payload:
   with col1:
     st.markdown(
         f"""<div class="glass-card" style="text-align: center;">
-            <h4 style="color: #38bdf8; margin:0;">🌡️ Surface Temp</h4>
-            <h2 style="color: #ffffff; margin:5px 0;">{p['atmospheric_telemetry']['temperature_c']} °C</h2>
-            <span style="color: #f43f5e; font-size: 0.85rem;">▲ High Thermal Load</span>
+            <h4 style="color: #0284c7; margin:0;">🌡️ Surface Temp</h4>
+            <h2 style="color: #0f172a; margin:5px 0;">{p['atmospheric_telemetry']['temperature_c']} °C</h2>
+            <span style="color: #e11d48; font-size: 0.85rem;">▲ High Thermal Load</span>
         </div>""",
         unsafe_allow_html=True,
     )
   with col2:
     st.markdown(
         f"""<div class="glass-card" style="text-align: center;">
-            <h4 style="color: #f43f5e; margin:0;">🔥 UHI Intensity</h4>
-            <h2 style="color: #ffffff; margin:5px 0;">+{p['uhi_surface_metrics']['uhi_intensity_c']} °C</h2>
-            <span style="color: #f59e0b; font-size: 0.85rem;">⚠️ {p['uhi_surface_metrics']['thermal_stress_index']}</span>
+            <h4 style="color: #e11d48; margin:0;">🔥 UHI Intensity</h4>
+            <h2 style="color: #0f172a; margin:5px 0;">+{p['uhi_surface_metrics']['uhi_intensity_c']} °C</h2>
+            <span style="color: #d97706; font-size: 0.85rem;">⚠️ {p['uhi_surface_metrics']['thermal_stress_index']}</span>
         </div>""",
         unsafe_allow_html=True,
     )
   with col3:
     st.markdown(
         f"""<div class="glass-card" style="text-align: center;">
-            <h4 style="color: #34d399; margin:0;">💧 Humidity</h4>
-            <h2 style="color: #ffffff; margin:5px 0;">{p['atmospheric_telemetry']['relative_humidity']} %</h2>
-            <span style="color: #34d399; font-size: 0.85rem;">● Atmospheric Stable</span>
+            <h4 style="color: #0d9488; margin:0;">💧 Humidity</h4>
+            <h2 style="color: #0f172a; margin:5px 0;">{p['atmospheric_telemetry']['relative_humidity']} %</h2>
+            <span style="color: #0d9488; font-size: 0.85rem;">● Atmospheric Stable</span>
         </div>""",
         unsafe_allow_html=True,
     )
   with col4:
     st.markdown(
         f"""<div class="glass-card" style="text-align: center;">
-            <h4 style="color: #a78bfa; margin:0;">🌿 NDVI Canopy</h4>
-            <h2 style="color: #ffffff; margin:5px 0;">{p['satellite_ndvi']}</h2>
-            <span style="color: #a78bfa; font-size: 0.85rem;">● Vegetation Index</span>
+            <h4 style="color: #7c3aed; margin:0;">🌿 NDVI Canopy</h4>
+            <h2 style="color: #0f172a; margin:5px 0;">{p['satellite_ndvi']}</h2>
+            <span style="color: #7c3aed; font-size: 0.85rem;">● Vegetation Index</span>
         </div>""",
         unsafe_allow_html=True,
     )
@@ -280,10 +272,10 @@ if st.session_state.payload:
   map_col, report_col = st.columns([1.1, 0.9])
 
   with map_col:
-    st.markdown("### 🗺️ Precision Spatial Vector & UHI Radar")
+    st.markdown("### 🗺️ High-Resolution Colored GIS Map")
     st.caption(f"🎯 Target Locality: **{p['full_address']}**")
 
-    # Use PyDeck with 'carto-darkmatter' (No Mapbox token required) to render elite vector maps with buildings/roads
+    # Use PyDeck with 'carto-positron' for crisp, colorful, Google Maps-style light vector tiles
     radar_data = pd.DataFrame([{
         "lat": p["coordinates"]["lat"],
         "lon": p["coordinates"]["lon"],
@@ -294,34 +286,34 @@ if st.session_state.payload:
         "ScatterplotLayer",
         data=radar_data,
         get_position=["lon", "lat"],
-        get_color=[244, 63, 94, 230],  # Glowing precision red core
-        get_radius=800,  # Tighter radius for specific area target
+        get_color=[225, 29, 72, 220],  # Vibrant crimson thermal marker
+        get_radius=500,  # Highly localized radius for specific area target
         pickable=True,
         stroked=True,
         filled=True,
         get_line_color=[255, 255, 255, 255],
-        line_width_min_pixels=2,
+        line_width_min_pixels=3,
     )
 
     view_state = pdk.ViewState(
         latitude=p["coordinates"]["lat"],
         longitude=p["coordinates"]["lon"],
-        zoom=14,  # High zoom level focused precisely on the specific locality
-        pitch=30,
+        zoom=14,  # High precision zoom focused on specific locality
+        pitch=20,
     )
 
     r = pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
-        map_style="carto-darkmatter",  # Renders gorgeous dark vector map tiles without API keys!
-        tooltip={"text": "Specific Target Zone\nUHI Delta: +{intensity}°C"},
+        map_style="carto-positron",  # Renders gorgeous, colorful, light-mode Google Maps style vector tiles!
+        tooltip={"text": "Target Locality\nUHI Delta: +{intensity}°C"},
     )
 
     st.pydeck_chart(r, use_container_width=True)
 
     st.markdown(
-        """<div style="background: rgba(30, 41, 59, 0.85); padding: 12px 16px; border-radius: 10px; border-left: 4px solid #38bdf8; margin-top: 12px; font-size: 0.9rem;">
-        ⚡ <b>Precision Vector Engine:</b> Renders exact locality boundaries with vector tile cartography via Carto Darkmatter.
+        """<div style="background: rgba(255, 255, 255, 0.85); padding: 12px 16px; border-radius: 10px; border-left: 4px solid #0284c7; margin-top: 12px; font-size: 0.9rem; color: #0f172a;">
+        📍 <b>Google Maps Style Cartography:</b> Rendering fully colored vector map tiles via Carto Positron with precision targeted UHI vector pins.
         </div>""",
         unsafe_allow_html=True,
     )
