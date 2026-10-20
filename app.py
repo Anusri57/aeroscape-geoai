@@ -1,12 +1,13 @@
 import pandas as pd
 import streamlit as st
 
-# --- 1. PAGE CONFIGURATION ---
+# ==========================================
+# 1. PAGE CONFIGURATION & STYLING
+# ==========================================
 st.set_page_config(
     page_title="AeroScape GeoAI | CSRE IIT Bombay", page_icon="🌍", layout="wide"
 )
 
-# --- 2. CUSTOM STYLING (UI/UX) ---
 st.markdown(
     """
     <style>
@@ -36,9 +37,11 @@ st.markdown(
 )
 
 
-# --- 3. HELPER & API FUNCTIONS (Defined first so they never throw NameErrors) ---
+# ==========================================
+# 2. HELPER & API FUNCTIONS (Defined First)
+# ==========================================
 def fetch_openstreetmap_data(location):
-  # Default coordinates for Powai, Mumbai
+  # Default fallback coordinates for Powai / Mumbai
   return 19.1136, 72.9060
 
 
@@ -72,7 +75,9 @@ def generate_geospatial_report(payload):
     """
 
 
-# --- 4. SESSION STATE INITIALIZATION ---
+# ==========================================
+# 3. SESSION STATE INITIALIZATION
+# ==========================================
 if "assessment_run" not in st.session_state:
   st.session_state.assessment_run = False
 if "payload" not in st.session_state:
@@ -80,7 +85,10 @@ if "payload" not in st.session_state:
 if "recommendation" not in st.session_state:
   st.session_state.recommendation = None
 
-# --- 5. SIDEBAR CONFIGURATION ---
+
+# ==========================================
+# 4. SIDEBAR INPUTS & ACTION BUTTON
+# ==========================================
 st.sidebar.markdown("### 📍 Spatial Target Configuration")
 target_location = st.sidebar.text_input("Enter Location Name", "Powai, Mumbai")
 mock_ndvi = st.sidebar.slider(
@@ -110,7 +118,10 @@ if st.sidebar.button("🚀 Run GeoAI Assessment", type="primary"):
         st.session_state.payload
     )
 
-# --- 6. MAIN INTERFACE & PERSISTENT RENDER BLOCK ---
+
+# ==========================================
+# 5. MAIN INTERFACE & PERSISTENT DISPLAY
+# ==========================================
 st.markdown(
     '<p class="hero-header">🌍 AeroScape GeoAI Research Assistant</p>',
     unsafe_allow_html=True,
@@ -122,7 +133,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Persistent check so the UI never vanishes after 1 second
 if st.session_state.assessment_run and st.session_state.payload:
   p = st.session_state.payload
 
