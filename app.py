@@ -1,5 +1,4 @@
 import streamlit as st
-
 # 1. Initialize session state variables
 if "assessment_run" not in st.session_state:
   st.session_state.assessment_run = False
