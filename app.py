@@ -1,13 +1,20 @@
 import streamlit as st
 
+# 1. Initialize session state variables
+if "assessment_run" not in st.session_state:
+  st.session_state.assessment_run = False
+if "payload" not in st.session_state:
+  st.session_state.payload = None
+if "recommendation" not in st.session_state:
+  st.session_state.recommendation = None
+
 st.sidebar.header("📍 Spatial Target Configuration")
 target_location = st.sidebar.text_input("Enter Location Name", "Powai, Mumbai")
 mock_ndvi = st.sidebar.slider(
     "Satellite NDVI (Vegetation Index)", 0.2, 0.8, 0.58
 )
 
-# Use a toggle/checkbox instead of a transient button. 
-# A checkbox holds its state across reruns automatically!
+# Use a checkbox so the state remains persistent and doesn't vanish
 run_assessment = st.sidebar.checkbox("Run GeoAI Assessment", value=True)
 
 if run_assessment:
@@ -32,11 +39,10 @@ if run_assessment:
 
       recommendation = generate_geospatial_report(payload)
 
-    # Display results right here inside the persistent block
     st.success(f"Assessment active for {target_location}!")
 
     st.write("### 🗺️ High-Resolution GIS Map")
-    # Make sure your map rendering code is here
+    # (Your map display code here)
 
     st.write("### 📊 Guardrailed AI Assessment Report")
     st.write(recommendation)
