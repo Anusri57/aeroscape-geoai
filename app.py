@@ -1,8 +1,8 @@
 import streamlit as st
 
-# Initialize session state variables so they persist across reruns
-if "assessment_run" not in st.session_state:
-  st.session_state.assessment_run = False
+# 1. Initialize session state variables
+if "assessment_active" not in st.session_state:
+  st.session_state.assessment_active = False
 if "payload" not in st.session_state:
   st.session_state.payload = None
 if "recommendation" not in st.session_state:
@@ -14,9 +14,9 @@ mock_ndvi = st.sidebar.slider(
     "Satellite NDVI (Vegetation Index)", 0.2, 0.8, 0.58
 )
 
-# Trigger assessment and store outputs in session state
+# 2. Use a callback or direct toggle state when button is clicked
 if st.sidebar.button("Run GeoAI Assessment"):
-  st.session_state.assessment_run = True
+  st.session_state.assessment_active = True
   with st.spinner(
       "Querying spatial APIs, executing UHI physics models, and generating"
       " verified AI report..."
@@ -35,21 +35,21 @@ if st.sidebar.button("Run GeoAI Assessment"):
         "uhi_surface_metrics": uhi_results,
     }
 
-    # Store recommendation in session state permanently
     st.session_state.recommendation = generate_geospatial_report(
         st.session_state.payload
     )
 
-# --- PERSISTENT DISPLAY BLOCK ---
-# This runs every time and renders the saved data so it never disappears
-if st.session_state.assessment_run and st.session_state.payload:
+# 3. Persistent Render Block (Independent of the button click state)
+if st.session_state.assessment_active and st.session_state.payload:
   st.success(
-      f"Assessment active for {st.session_state.payload['location']}!"
+      f"Active Assessment: {st.session_state.payload['location']}"
   )
 
-  # Display your maps, metrics, and report using st.session_state.recommendation
+  # --- PUT YOUR MAP DISPLAY CODE HERE ---
+  # Example: st.pyplot(fig) or st.map(...)
   st.write("### 🗺️ High-Resolution GIS Map")
-  # (Your map display code here)
+  # Ensure your map code is rendered here using st.session_state.payload
 
+  # --- PUT YOUR REPORT DISPLAY CODE HERE ---
   st.write("### 📊 Guardrailed AI Assessment Report")
   st.write(st.session_state.recommendation)
