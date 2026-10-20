@@ -1,4 +1,6 @@
-# Initialize session state for persistence
+import streamlit as st
+
+# Initialize session state variables so they persist across reruns
 if "assessment_run" not in st.session_state:
   st.session_state.assessment_run = False
 if "payload" not in st.session_state:
@@ -12,6 +14,7 @@ mock_ndvi = st.sidebar.slider(
     "Satellite NDVI (Vegetation Index)", 0.2, 0.8, 0.58
 )
 
+# Trigger assessment and store outputs in session state
 if st.sidebar.button("Run GeoAI Assessment"):
   st.session_state.assessment_run = True
   with st.spinner(
@@ -32,20 +35,21 @@ if st.sidebar.button("Run GeoAI Assessment"):
         "uhi_surface_metrics": uhi_results,
     }
 
+    # Store recommendation in session state permanently
     st.session_state.recommendation = generate_geospatial_report(
         st.session_state.payload
     )
 
-# Display results persistently if the assessment has been run
+# --- PERSISTENT DISPLAY BLOCK ---
+# This runs every time and renders the saved data so it never disappears
 if st.session_state.assessment_run and st.session_state.payload:
-  # --- PUT YOUR MAPS, METRICS, AND REPORT DISPLAY CODE HERE ---
   st.success(
-      f"Assessment complete for {st.session_state.payload['location']}!"
+      f"Assessment active for {st.session_state.payload['location']}!"
   )
 
-  # Example display elements (adjust based on your existing code display):
-  st.write("### UHI Surface Metrics")
-  st.json(st.session_state.payload["uhi_surface_metrics"])
+  # Display your maps, metrics, and report using st.session_state.recommendation
+  st.write("### 🗺️ High-Resolution GIS Map")
+  # (Your map display code here)
 
-  st.write("### Geospatial Report")
+  st.write("### 📊 Guardrailed AI Assessment Report")
   st.write(st.session_state.recommendation)
