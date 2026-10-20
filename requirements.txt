@@ -1,0 +1,8 @@
+streamlit
+requests
+numpy
+torch
+transformers
+folium
+streamlit-folium
+accelerate
