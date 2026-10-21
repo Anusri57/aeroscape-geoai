@@ -7,7 +7,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
- 
+
 st.markdown(
     """
     <style>
@@ -135,7 +135,7 @@ HTML_APP = r"""
             <div class="bg-slate-950/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-inner grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                 <div class="md:col-span-4">
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">📍 Target Locality / City</label>
-                    <input id="locationInput" type="text" value="Miyapur, Hyderabad" placeholder="e.g., Delhi NCR, Powai" 
+                    <input id="locationInput" type="text" value="Miyapur, Hyderabad" placeholder="e.g., Delhi, Mumbai" 
                         class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div class="md:col-span-3">
@@ -412,11 +412,11 @@ HTML_APP = r"""
             hotspotSectors: []
         };
 
-        // Fallback coordinate dictionary so queries like "ncr, delhi" or "powai, mumbai" never fail
         const fallbackCoords = {
             "ncr, delhi": { lat: 28.6139, lon: 77.2090, name: "New Delhi, National Capital Region, India" },
             "delhi": { lat: 28.6139, lon: 77.2090, name: "New Delhi, National Capital Region, India" },
-            "powai, mumbai": { lat: 19.1136, tlon: 72.9060, name: "Powai, Mumbai, Maharashtra, India" },
+            "ncr": { lat: 28.6139, lon: 77.2090, name: "New Delhi, National Capital Region, India" },
+            "powai, mumbai": { lat: 19.1136, lon: 72.9060, name: "Powai, Mumbai, Maharashtra, India" },
             "mumbai": { lat: 19.0760, lon: 72.8777, name: "Mumbai, Maharashtra, India" },
             "alambagh, lucknow": { lat: 26.8204, lon: 80.8993, name: "Alambagh, Lucknow, Uttar Pradesh, India" },
             "lucknow": { lat: 26.8467, lon: 80.9462, name: "Lucknow, Uttar Pradesh, India" },
@@ -446,7 +446,6 @@ HTML_APP = r"""
                     const nomData = await nomRes.json();
 
                     if (!nomData || nomData.length === 0) {
-                        // Default fallback if not found
                         lat = 28.6139; lon = 77.2090; fullName = rawQuery + ", India (Approximate Region)";
                     } else {
                         lat = parseFloat(nomData[0].lat);
@@ -501,12 +500,12 @@ HTML_APP = r"""
                 document.getElementById('co2Sub').innerText = `Est. ${estCo2} Tonnes CO₂ offset`;
                 document.getElementById('coordFooter').innerText = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
 
+                // --- CRITICAL MAP FIX: UNCONDITIONALLY SET VIEW & RENDER GRID ---
                 boundaryLayer.clearLayers();
                 gridLayer.clearLayers();
 
                 map.setView([lat, lon], 14);
 
-                // Generate 5x5 microclimate grid centered on searched coordinates
                 const spanLat = 0.02;
                 const spanLon = 0.02;
                 const minLat = lat - spanLat / 2;
