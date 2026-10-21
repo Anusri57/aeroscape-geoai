@@ -109,8 +109,8 @@ HTML_APP = r"""
             <div class="bg-slate-950/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-inner grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                 <div class="md:col-span-4">
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">📍 Target Locality</label>
-                    <input id="locationInput" type="text" value="Miyapur, Hyderabad" placeholder="e.g., Powai, Mumbai" 
-                        class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900" />
+                    <input id="locationInput" type="text" value="Miyapur, Hyderabad" placeholder="e.g., Alambagh, Lucknow" 
+                        class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div class="md:col-span-3">
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">🏃 Activity</label>
@@ -157,8 +157,8 @@ HTML_APP = r"""
                 <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-rose-950 text-rose-300 border border-rose-800">Surface Heat</span>
             </div>
             <p class="text-xs font-bold uppercase text-slate-400">Land Surface Temp (LST)</p>
-            <h2 id="lstVal" class="text-3xl font-extrabold text-white my-1">-- °C</h2>
-            <p id="ambientSub" class="text-xs font-medium text-slate-400">Ambient 2m: -- °C</p>
+            <h2 id="lstVal" class="text-3xl font-extrabold text-white my-1">35.8 °C</h2>
+            <p id="ambientSub" class="text-xs font-medium text-slate-400">Ambient 2m: 32 °C | Landsat-9 TIR</p>
         </div>
 
         <div class="glass-bento border-amber-500/30">
@@ -178,7 +178,7 @@ HTML_APP = r"""
             </div>
             <p class="text-xs font-bold uppercase text-slate-400">NDVI & Air Quality</p>
             <h2 id="ndviCardVal" class="text-3xl font-extrabold text-white my-1">0.34 / AQI 42</h2>
-            <p id="windSub" class="text-xs font-medium text-slate-400">Wind: -- km/h (Upwind Safe)</p>
+            <p id="windSub" class="text-xs font-medium text-slate-400">Wind: 11.5 km/h (Upwind Safe)</p>
         </div>
 
         <div class="glass-bento border-indigo-500/30">
@@ -218,7 +218,7 @@ HTML_APP = r"""
                     <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-amber-400 inline-block"></span> Moderate (+2.5–4.5°C)</span>
                     <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-emerald-500 inline-block"></span> Cool Zone (&lt;+2.5°C)</span>
                 </div>
-                <span id="coordFooter" class="mono text-cyan-400">Lat: --, Lon: --</span>
+                <span id="coordFooter" class="mono text-cyan-400">Lat: 17.4968, Lon: 78.3614</span>
             </div>
         </div>
 
@@ -442,7 +442,7 @@ HTML_APP = r"""
 
                 document.getElementById('resolvedAddressBar').innerText = `📍 Verified Boundary: ${place.display_name} (${nowStr})`;
                 document.getElementById('lstVal').innerText = `${lst} °C`;
-                document.getElementById('ambientSub').innerText = `Ambient 2m: ${ambientTemp} °C | Landsat-9 TIR Sensor`;
+                document.getElementById('ambientSub').innerText = `Ambient 2m: ${ambientTemp} °C | Landsat-9 TIR`;
                 document.getElementById('uhiVal').innerText = `+${uhiDelta} °C`;
                 
                 let optimalTime = "06:00 – 08:30 AM";
@@ -569,7 +569,7 @@ HTML_APP = r"""
                 return `
                     <div class="font-bold text-cyan-400 mb-1">🎯 Precision Recommendation for ${act} (${health})</div>
                     <b>• Best Nearby Place:</b> Sector A1 Botanical Buffer & Central Park Perimeter in ${loc}.<br>
-                    <b>• Best Time Window:</b> 06:00 – 08:30 AM (Lowest LST at ${state.lst - 2.1}°C).<br>
+                    <b>• Best Time Window:</b> 06:00 – 08:30 AM (Lowest LST at ${(state.lst - 2.1).toFixed(1)}°C).<br>
                     <b>• Geospatial Rationale:</b> Upwind from major traffic arteries with 45% higher canopy cover.`;
             }
             if (q.includes('prepare') || q.includes('carry') || q.includes('gear')) {
