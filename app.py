@@ -25,7 +25,7 @@ HTML_APP = r"""
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroScape GeoAI - IITB CSRE Hackathon</title>
+    <title>AeroScape GeoAI - CSRE IIT Bombay Hackathon</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -39,6 +39,7 @@ HTML_APP = r"""
             color: #f8fafc;
             margin: 0;
             overflow-x: hidden;
+            position: relative;
         }
         @keyframes auroraFlow {
             0% { background-position: 0% 50%; }
@@ -47,6 +48,26 @@ HTML_APP = r"""
         }
         h1, h2, h3, .display-font { font-family: 'Space Grotesk', sans-serif; }
         .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Floating Satellite Data Packets (Moving theme related to project) */
+        @keyframes floatPacket {
+            0% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
+            50% { transform: translateY(-30px) translateX(20px); opacity: 0.8; }
+            100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
+        }
+        .data-packet {
+            position: absolute;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: #38bdf8;
+            pointer-events: none;
+            animation: floatPacket 8s ease-in-out infinite;
+            z-index: 1;
+        }
 
         @keyframes floatSlow {
             0%, 100% { transform: translateY(0px) translateX(0px); }
@@ -63,6 +84,7 @@ HTML_APP = r"""
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
+            z-index: 5;
         }
         .glass-bento:hover {
             transform: translateY(-4px);
@@ -77,10 +99,16 @@ HTML_APP = r"""
         ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 relative">
+
+    <!-- FLOATING ORBITAL DATA PACKETS (Moving Themes) -->
+    <div class="data-packet" style="top: 15%; left: 5%; animation-delay: 0s;">🛰️ T: 312.4K | TIR BAND 10</div>
+    <div class="data-packet" style="top: 35%; right: 8%; animation-delay: 2s;">🌿 NDVI: 0.42 | UPWIND SAFE</div>
+    <div class="data-packet" style="top: 70%; left: 8%; animation-delay: 4s;">⚡ UHI DELTA: +4.2°C</div>
+    <div class="data-packet" style="top: 85%; right: 12%; animation-delay: 1.5s;">📍 OSRM ROUTE ACTIVE</div>
 
     <!-- TOP NAVIGATION BAR -->
-    <nav class="max-w-7xl mx-auto flex flex-wrap items-center justify-between bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-full px-6 py-3 mb-8 shadow-lg">
+    <nav class="max-w-7xl mx-auto flex flex-wrap items-center justify-between bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-full px-6 py-3 mb-8 shadow-lg relative z-10">
         <div class="flex items-center gap-3">
             <span class="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-ping"></span>
             <span class="display-font font-bold text-lg tracking-tight text-white">AEROSCAPE <span class="text-cyan-400">×</span> CSRE IIT BOMBAY</span>
@@ -93,7 +121,7 @@ HTML_APP = r"""
     </nav>
 
     <!-- HERO SECTION -->
-    <section class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-10 bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 md:p-10 shadow-xl relative overflow-hidden">
+    <section class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-10 bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 md:p-10 shadow-xl relative overflow-hidden z-10">
         <div class="lg:col-span-7 z-10">
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-800 text-cyan-300 text-xs font-bold tracking-wide uppercase mb-4">
                 🎯 Outdoor Activity Advisor & Microclimate Intelligence
@@ -108,8 +136,8 @@ HTML_APP = r"""
             <!-- INTERACTIVE CONTROL BAR -->
             <div class="bg-slate-950/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-inner grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                 <div class="md:col-span-4">
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">📍 Target Locality</label>
-                    <input id="locationInput" type="text" value="Miyapur, Hyderabad" placeholder="e.g., Alambagh, Lucknow" 
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">📍 Target Locality / City</label>
+                    <input id="locationInput" type="text" value="Miyapur, Hyderabad" placeholder="e.g., Powai, Mumbai" 
                         class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div class="md:col-span-3">
@@ -150,7 +178,7 @@ HTML_APP = r"""
     </section>
 
     <!-- BENTO GRID CARDS -->
-    <section class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+    <section class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10 relative z-10">
         <div class="glass-bento border-rose-500/30">
             <div class="flex justify-between items-center mb-4">
                 <span class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center justify-center text-xs mono font-bold">01</span>
@@ -193,7 +221,7 @@ HTML_APP = r"""
     </section>
 
     <!-- MAIN WORKSPACE: MAP + CHATBOT -->
-    <section class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+    <section class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10 relative z-10">
         
         <!-- MAP SECTION -->
         <div class="lg:col-span-7 glass-bento flex flex-col justify-between">
@@ -390,7 +418,7 @@ HTML_APP = r"""
             const locQuery = document.getElementById('locationInput').value.trim();
             const activity = document.getElementById('activitySelect').value;
             const health = document.getElementById('healthSelect').value;
-            const ndviInput = parseFloat(document.getElementById('ndviSlider').value);
+            const ndviInput = 0.34;
             const btn = document.getElementById('analyzeBtn');
             btn.innerHTML = '<span>Analyzing...</span>';
 
