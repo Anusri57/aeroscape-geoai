@@ -500,11 +500,16 @@ HTML_APP = r"""
                 document.getElementById('co2Sub').innerText = `Est. ${estCo2} Tonnes CO₂ offset`;
                 document.getElementById('coordFooter').innerText = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
 
-                // --- CRITICAL MAP FIX: UNCONDITIONALLY SET VIEW & RENDER GRID ---
+                // --- FORCED MAP RE-CENTER & INVALIDATE SIZE ---
                 boundaryLayer.clearLayers();
                 gridLayer.clearLayers();
 
+                map.invalidateSize();
                 map.setView([lat, lon], 14);
+                setTimeout(() => {
+                    map.invalidateSize();
+                    map.setView([lat, lon], 14);
+                }, 200);
 
                 const spanLat = 0.02;
                 const spanLon = 0.02;
