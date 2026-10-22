@@ -11,7 +11,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Optional HTTP GET query endpoint support (?q=...) for automated judging scripts
 query_params = st.query_params
 initial_url_query = query_params.get("q", "")
 
@@ -157,7 +156,7 @@ HTML_APP = r"""
             <div class="bg-slate-950/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-inner grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                 <div class="md:col-span-4">
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">📍 Target Locality / City</label>
-                    <input id="locationInput" type="text" value="Madhapur, Hyderabad" placeholder="Type any area & press Enter..." 
+                    <input id="locationInput" type="text" value="New Delhi, NCR" placeholder="Type any area & press Enter..." 
                         onkeydown="if(event.key==='Enter') runSpatialAnalysis()"
                         class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
@@ -197,12 +196,12 @@ HTML_APP = r"""
             <!-- INSTANT TEST LOCATION CHIPS -->
             <div class="flex flex-wrap items-center gap-1.5 mt-3">
                 <span class="text-xs text-slate-400 font-semibold mr-1">Quick Jump:</span>
-                <button type="button" onclick="quickSelectLocation('Madhapur, Hyderabad')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Madhapur, HYD</button>
+                <button type="button" onclick="quickSelectLocation('New Delhi, NCR')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Delhi NCR</button>
                 <button type="button" onclick="quickSelectLocation('Powai, Mumbai')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Powai, Mumbai</button>
                 <button type="button" onclick="quickSelectLocation('Koregaon Park, Pune')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Koregaon Park, Pune</button>
                 <button type="button" onclick="quickSelectLocation('Whitefield, Bengaluru')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Whitefield, BLR</button>
-                <button type="button" onclick="quickSelectLocation('New Delhi, NCR')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Delhi NCR</button>
-                <button type="button" onclick="quickSelectLocation('Alambagh, Lucknow')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Alambagh, Lucknow</button>
+                <button type="button" onclick="quickSelectLocation('Bandra, Mumbai')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Bandra, Mumbai</button>
+                <button type="button" onclick="quickSelectLocation('Lonavala')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Lonavala</button>
             </div>
 
             <p id="resolvedAddressBar" class="text-xs mono text-cyan-400 mt-2.5">📍 Active Boundary: Syncing live coordinates...</p>
@@ -284,7 +283,7 @@ HTML_APP = r"""
                     <span class="flex items-center gap-1.5 font-semibold"><span class="w-3.5 h-3.5 rounded-sm bg-amber-400 inline-block"></span> MODERATE (+2.5–4.2°C)</span>
                     <span class="flex items-center gap-1.5 font-semibold"><span class="w-3.5 h-3.5 rounded-sm bg-emerald-500 inline-block"></span> COOL ZONE (&lt;+2.5°C)</span>
                 </div>
-                <span id="coordFooter" class="mono text-cyan-400 font-bold">Lat: 17.4483, Lon: 78.3915</span>
+                <span id="coordFooter" class="mono text-cyan-400 font-bold">Lat: 28.6139, Lon: 77.2090</span>
             </div>
         </div>
 
@@ -300,7 +299,7 @@ HTML_APP = r"""
 
             <div class="flex flex-wrap gap-1.5 mb-3">
                 <button type="button" onclick="triggerQuickPrompt('recommend')" class="text-xs bg-slate-800 hover:bg-cyan-600 text-slate-300 font-semibold px-3 py-1.5 rounded-full transition cursor-pointer">🎯 Best Place & Time</button>
-                <button type="button" onclick="triggerQuickPrompt('prepare')" class="text-xs bg-slate-800 hover:bg-cyan-600 text-slate-300 font-semibold px-3 py-1.5 rounded-full transition cursor-pointer">🎒 What to Carry</button>
+                <button type="button" onclick="triggerQuickPrompt('prepare')" class="text-xs bg-slate-800 hover:bg-cyan-600 text-slate-300 font-semibold px-3 py-1.5 rounded-full transition cursor-pointer">🎒 What to Prepare</button>
                 <button type="button" onclick="triggerQuickPrompt('avoid')" class="text-xs bg-slate-800 hover:bg-rose-600 text-slate-300 font-semibold px-3 py-1.5 rounded-full transition cursor-pointer">⚠️ When to Avoid</button>
                 <button type="button" onclick="triggerQuickPrompt('sources')" class="text-xs bg-slate-800 hover:bg-emerald-600 text-slate-300 font-semibold px-3 py-1.5 rounded-full transition cursor-pointer">📊 Live Data Proof</button>
             </div>
@@ -409,7 +408,7 @@ HTML_APP = r"""
         }
         drawGlobe();
 
-        // Map Initialization (Exact working setup)
+        // Map Initialization
         const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             maxZoom: 20, attribution: 'Map data &copy; Google © OpenStreetMap contributors'
         });
@@ -418,7 +417,7 @@ HTML_APP = r"""
         });
 
         const map = L.map('map', {
-            center: [17.4483, 78.3915],
+            center: [28.6139, 77.2090],
             zoom: 14,
             layers: [googleStreets]
         });
@@ -454,12 +453,12 @@ HTML_APP = r"""
         }
 
         let state = {
-            location: "Madhapur, Hyderabad",
-            fullAddress: "Madhapur, Hyderabad, Telangana, India",
+            location: "New Delhi, NCR",
+            fullAddress: "New Delhi, National Capital Region (NCR), Delhi, India",
             activity: "Running",
             health: "Standard",
-            lat: 17.4483,
-            lon: 78.3915,
+            lat: 28.6139,
+            lon: 77.2090,
             ambientTemp: 30.5,
             humidity: 48,
             windSpeed: 11.5,
@@ -511,20 +510,14 @@ HTML_APP = r"""
             "lucknow": { lat: 26.8467, lon: 80.9462, name: "Lucknow, Uttar Pradesh, India" },
             "miyapurhyderabad": { lat: 17.4968, lon: 78.3614, name: "Miyapur, Hyderabad, Telangana, India" },
             "miyapur": { lat: 17.4968, lon: 78.3614, name: "Miyapur, Hyderabad, Telangana, India" },
-            "kompally": { lat: 17.5439, lon: 78.4891, name: "Kompally, Hyderabad, Telangana, India" },
-            "gachibowli": { lat: 17.4401, lon: 78.3489, name: "Gachibowli, Hyderabad, Telangana, India" },
             "madhapurhyderabad": { lat: 17.4483, lon: 78.3915, name: "Madhapur, Hyderabad, Telangana, India" },
             "madhapur": { lat: 17.4483, lon: 78.3915, name: "Madhapur, Hyderabad, Telangana, India" },
-            "secunderabad": { lat: 17.4399, lon: 78.4983, name: "Secunderabad, Telangana, India" },
-            "khammam": { lat: 17.2473, lon: 80.1514, name: "Khammam, Telangana, India" },
             "hyderabad": { lat: 17.3850, lon: 78.4867, name: "Hyderabad, Telangana, India" },
             "chennai": { lat: 13.0827, lon: 80.2707, name: "Chennai, Tamil Nadu, India" },
             "kolkata": { lat: 22.5726, lon: 88.3639, name: "Kolkata, West Bengal, India" },
-            "jaipur": { lat: 26.9124, lon: 75.7873, name: "Jaipur, Rajasthan, India" },
-            "ahmedabad": { lat: 23.0225, lon: 72.5714, name: "Ahmedabad, Gujarat, India" }
+            "jaipur": { lat: 26.9124, lon: 75.7873, name: "Jaipur, Rajasthan, India" }
         };
 
-        // Draws the 5x5 Colored Heat Grid + Visible Cell Labels + Popups immediately (UNTOUCHED WORKING LOGIC)
         function drawHeatGridOnMap(lat, lon, labelName, ambientTemp, uhiDelta, ndviInput, lst) {
             try {
                 boundaryLayer.clearLayers();
@@ -585,7 +578,7 @@ HTML_APP = r"""
                         });
 
                         rect.bindPopup(`
-                            <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:205px; color:#18181b;">
+                            <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:200px; color:#18181b;">
                                 <div style="font-weight:800; font-size:13px; border-bottom:1px solid #e4e4e7; padding-bottom:4px; margin-bottom:6px;">
                                     📍 Sector ${cellId} — ${labelName}
                                 </div>
@@ -677,10 +670,9 @@ HTML_APP = r"""
                 };
             }
 
-            return { lat: 17.4483, lon: 78.3915, name: rawQuery + " (Mapped via Regional Grid)" };
+            return { lat: 28.6139, lon: 77.2090, name: rawQuery + " (Mapped via Regional Grid)" };
         }
 
-        // Fetch Real Nearby Parks / Grounds via OpenStreetMap Overpass API
         async function fetchNearbyVenues(lat, lon, locName) {
             const overpassQuery = `[out:json][timeout:3];(node["leisure"~"park|pitch|sports_centre|garden|stadium"](around:3500,${lat},${lon});way["leisure"~"park|pitch|sports_centre|garden|stadium"](around:3500,${lat},${lon}););out tags center 6;`;
             const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
@@ -710,14 +702,13 @@ HTML_APP = r"""
         }
 
         async function runSpatialAnalysis() {
-            const rawQuery = document.getElementById('locationInput').value.trim() || "Madhapur, Hyderabad";
+            const rawQuery = document.getElementById('locationInput').value.trim() || "New Delhi, NCR";
             const activity = document.getElementById('activitySelect').value;
             const health = document.getElementById('healthSelect').value;
             const ndviInput = 0.34;
             const btn = document.getElementById('analyzeBtn');
             btn.innerHTML = '<span>Syncing...</span>';
 
-            // 1. Resolve Coordinates & IMMEDIATELY Move Map + Draw 25-Cell Heat Grid
             const locObj = await resolveCoordinates(rawQuery);
             const lat = locObj.lat;
             const lon = locObj.lon;
@@ -725,7 +716,6 @@ HTML_APP = r"""
 
             drawHeatGridOnMap(lat, lon, rawQuery, state.ambientTemp, state.uhiDelta, ndviInput, state.lst);
 
-            // 2. Fetch Live Weather + Wind Direction + Sunrise/Sunset from Open-Meteo AND Live AQI from Open-Meteo Air Quality API
             const weatherPromise = fetchWithTimeout(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,shortwave_radiation&daily=sunrise,sunset&timezone=auto`, 3500);
             const aqiPromise = fetchWithTimeout(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5,pm10,uv_index`, 3500);
             const venuesPromise = fetchNearbyVenues(lat, lon, rawQuery.split(',')[0]);
@@ -786,7 +776,6 @@ HTML_APP = r"""
                 coolSectors: []
             };
 
-            // 3. Re-draw Heat Grid with exact live telemetry & update Bento Cards
             drawHeatGridOnMap(lat, lon, rawQuery, ambientTemp, uhiDelta, ndviInput, lst);
 
             setText('resolvedAddressBar', `📍 Verified Boundary: ${fullName} (${nowStr})`);
@@ -829,19 +818,16 @@ HTML_APP = r"""
             box.scrollTop = box.scrollHeight;
         }
 
-        // Free-form Natural Language Parser (Handles all Page 3 Example Queries & Incomplete/Out-of-Scope Queries)
         function parseFreeFormQuery(query) {
             const q = query.toLowerCase();
 
-            // 1. Check for out-of-scope non-outdoor queries (Page 3 requirement)
             if (q.includes('recipe') || q.includes('cook') || q.includes('stock market') || q.includes('movie') || q.includes('write code')) {
                 return {
                     handled: true,
-                    reply: `⚠️ <b>Out-of-Scope Request Handled Gracefully:</b> I am a specialized <b>GeoAI Outdoor Activity & Microclimate Assistant</b>. I only advise on outdoor activities, live weather/AQI telemetry, and safe spatial/time windows. Try asking: <i>"Where can I go running this evening near Koregaon Park?"</i>`
+                    reply: `⚠️ <b>Out-of-Scope Request Handled Gracefully:</b> I am a specialized <b>GeoAI Outdoor Activity & Microclimate Assistant</b>. I only advise on outdoor activities, live weather/AQI telemetry, and safe spatial/time windows.`
                 };
             }
 
-            // 2. Detect activity in free-form text
             const actMap = [
                 { kw: ['run', 'jog'], val: 'Running' },
                 { kw: ['cycl', 'bike', 'commute'], val: 'Cycling' },
@@ -854,16 +840,13 @@ HTML_APP = r"""
                 { kw: ['party', 'wedding', 'event', 'gathering', 'birthday', 'fair'], val: 'Event' },
                 { kw: ['photo', 'sunset', 'camera'], val: 'Photography' }
             ];
-            let matchedAct = null;
             for (const item of actMap) {
                 if (item.kw.some(k => q.includes(k))) {
-                    matchedAct = item.val;
-                    document.getElementById('activitySelect').value = matchedAct;
+                    document.getElementById('activitySelect').value = item.val;
                     break;
                 }
             }
 
-            // 3. Detect personal/health profile in free-form text
             if (q.includes('asthma') || q.includes('breathing') || q.includes('respiratory')) {
                 document.getElementById('healthSelect').value = 'Asthma';
             } else if (q.includes('parent') || q.includes('senior') || q.includes('elderly') || q.includes('old')) {
@@ -874,7 +857,6 @@ HTML_APP = r"""
                 document.getElementById('healthSelect').value = 'Pregnancy';
             }
 
-            // 4. Detect location in free-form text (e.g., "near Koregaon Park", "in Pune", "around Bandra")
             const locMatch = query.match(/(?:near|in|around|of|at|to)\s+([A-Za-z\s,]{3,30})(?:\?|$|\.|for|on|this|tomorrow|today|next)/i);
             let extractedLoc = null;
             if (locMatch && locMatch[1]) {
@@ -890,20 +872,12 @@ HTML_APP = r"""
                 }
             }
 
-            // 5. Handle incomplete query missing a specific location (e.g., "Is it okay to cycle to work at 8 AM?")
-            if (matchedAct && !extractedLoc && (q.includes('to work') || q.includes('8 am') || q.includes('tomorrow') || q.includes('weekend')) && !q.includes('here')) {
-                return {
-                    handled: true,
-                    reply: `📍 <b>Location Clarification Note:</b> You asked about <b>${matchedAct}</b> without specifying a neighborhood, so I am evaluating your currently locked locality (<b>${state.location}</b>) and can switch immediately if you name another city!<br><br>` + getSmartBotReply('recommend')
-                };
-            }
-
             if (extractedLoc && extractedLoc.toLowerCase() !== state.location.toLowerCase()) {
                 document.getElementById('locationInput').value = extractedLoc;
                 runSpatialAnalysis();
                 return {
                     handled: true,
-                    reply: `🔄 <b>Parsed Free-Form Query:</b> Detected Locality <b>${extractedLoc}</b>, Activity <b>${document.getElementById('activitySelect').value}</b>, Profile <b>${document.getElementById('healthSelect').value}</b>. Fetching live OSM venues, Open-Meteo weather & AQI, and updating the 25-sector map grid...`
+                    reply: `🔄 <b>Parsed Free-Form Query:</b> Detected Locality <b>${extractedLoc}</b>, Activity <b>${document.getElementById('activitySelect').value}</b>, Profile <b>${document.getElementById('healthSelect').value}</b>. Fetching live OSM venues, Open-Meteo weather & AQI, and updating map...`
                 };
             }
 
@@ -982,7 +956,6 @@ HTML_APP = r"""
             setTimeout(() => appendBotMessage(getSmartBotReply(q)), 150);
         }
 
-        // Draw initial grid immediately so map is never empty, then fetch live telemetry
         drawHeatGridOnMap(state.lat, state.lon, state.location, state.ambientTemp, state.uhiDelta, state.ndvi, state.lst);
         window.onload = () => {
             if (INITIAL_URL_QUERY) {
