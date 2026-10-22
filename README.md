@@ -1,20 +1,27 @@
 # AeroScape GeoAI
 Built for the GeoAI Hackathon at CSRE, IIT Bombay.
 
+## Live Application URL
+- **Render Endpoint:** https://aeroscape-geoai.onrender.com
+
+## Small Language Model (SLM) Component
+- **Model Disclosed:** `Qwen/Qwen2.5-1.5B-Instruct` (1.5 Billion parameters, strictly under the ≤3B hackathon model size limit).
+- **Hugging Face Model Card Repository:** https://huggingface.co/Anusri1607/aeroscape-geoai-slm.
+- **Intended Use:** Spatial-temporal reasoning over live JSON telemetry payloads fetched dynamically at query time from OpenStreetMap and Open-Meteo APIs.
+
 ## Key Innovations & Architecture
-- Live Satellite Remote Sensing: Fuses OpenStreetMap vector data with real-time multispectral Sentinel-2 NDVI canopy greenness via Google Earth Engine.
-- Gaussian Plume Atmospheric Dispersion Physics: Models directional wind-vector pollutant diffusion from major highways and industrial zones.
-- Urban Heat Island (UHI) Thermal Corrections: Calculates localized microclimate temperature stress adjustments, surface emissivity, and physiological discomfort indices.
-- Zero-Hallucination Guardrails: Powered by Qwen2.5-1.5B-Instruct grounded entirely on live verified APIs with robust network fallback error handling.
-- Interactive GIS Visualization: Renders high-zoom, custom-styled Esri World Street Map layers via Folium featuring live clickable telemetry popup metadata.
+- **Live Vector Mapping:** Fuses OpenStreetMap vector data (Nominatim & Overpass APIs) with localized green canopy metrics.
+- **Atmospheric & Wind Vector Reasoning:** Models directional wind-vector diffusion and pollutant/PM2.5 patterns relative to major roadways and urban zones.
+- **Urban Heat Island (UHI) Thermal Corrections:** Calculates localized microclimate temperature stress adjustments (LST vs. ambient) and physiological discomfort indices for 10 distinct outdoor activities.
+- **Zero-Hallucination Guardrails:** Powered by Qwen2.5-1.5B-Instruct grounded entirely on live verified APIs with strict safety thresholds for sensitive profiles (Asthma, Senior Citizens, Children, Pregnancy).
+- **Interactive GIS Visualization:** Renders high-zoom custom tile layers featuring a live 25-sector clickable microclimate thermal mesh with real-time sector telemetry.
 
-## Live Data Sources
-- OpenStreetMap contributors (Overpass & Nominatim APIs)
-- Google Earth Engine (Sentinel-2 SR Harmonized Multispectral Imagery)
-- Open-Meteo (Hourly Atmospheric Forecast & Air Quality APIs)
-- OSRM Routing Machine (Live travel-time traffic impedance)
+## Live Data Sources Disclosed
+- **Maps & Venues:** OpenStreetMap contributors via Overpass & Nominatim APIs (**© OpenStreetMap contributors**)
+- **Weather & Air Quality:** Open-Meteo (Hourly Atmospheric Forecast & Air Quality APIs for live US AQI, PM2.5, and UV Index)
+- **Routing & Travel Time:** OSRM (Open Source Routing Machine for venue distance and travel impedance)
 
-## How to Run
-1. Clone the repository: `git clone https://github.com/Anusri57/aeroscape-geoai.git`
-2. Install dependencies: `pip install transformers accelerate torch requests folium earthengine-api numpy`
-3. Run the engine: `python "main (1).py"`
+## How to Run Locally
+```bash
+pip install -r requirements.txt
+streamlit run app.py
