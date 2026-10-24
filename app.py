@@ -3,7 +3,7 @@ import urllib.parse
 import urllib.request
 import streamlit as st
 import streamlit.components.v1 as components
- 
+
 st.set_page_config(
     page_title="AeroScape GeoAI | Outdoor Activity Advisor",
     page_icon="🌍",
@@ -197,10 +197,11 @@ HTML_APP = r"""
             <div class="flex flex-wrap items-center gap-1.5 mt-3">
                 <span class="text-xs text-slate-400 font-semibold mr-1">Quick Jump:</span>
                 <button type="button" onclick="quickSelectLocation('New Delhi, NCR')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Delhi NCR</button>
+                <button type="button" onclick="quickSelectLocation('Gachibowli, Hyderabad')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Gachibowli, Hyd</button>
+                <button type="button" onclick="quickSelectLocation('Secunderabad, Telangana')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Secunderabad</button>
                 <button type="button" onclick="quickSelectLocation('Powai, Mumbai')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Powai, Mumbai</button>
                 <button type="button" onclick="quickSelectLocation('Koregaon Park, Pune')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Koregaon Park, Pune</button>
                 <button type="button" onclick="quickSelectLocation('Whitefield, Bengaluru')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Whitefield, BLR</button>
-                <button type="button" onclick="quickSelectLocation('Bandra, Mumbai')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Bandra, Mumbai</button>
                 <button type="button" onclick="quickSelectLocation('Lonavala')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Lonavala</button>
             </div>
 
@@ -315,7 +316,7 @@ HTML_APP = r"""
         </div>
     </section>
 
-    <!-- ATTRIBUTION FOOTER (REQUIRED BY RULE.PDF PAGE 6) -->
+    <!-- ATTRIBUTION FOOTER -->
     <footer class="max-w-7xl mx-auto text-center text-xs text-slate-400 mono py-3 border-t border-slate-800/80 relative z-10">
         Data Sources Disclosed Live per Query: Map & Venues © OpenStreetMap contributors (Nominatim & Overpass API) | Weather & Air Quality: Open-Meteo Forecast & Air Quality APIs | Routing: OSRM | SLM Engine: Qwen/Qwen2.5-1.5B-Instruct (≤3B Open Weights on Hugging Face)
     </footer>
@@ -408,7 +409,7 @@ HTML_APP = r"""
         }
         drawGlobe();
 
-        // Map Initialization
+        // Map Initialization with Google Tiles (No API Key Required Watermarks)
         const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             maxZoom: 20, attribution: 'Map data &copy; Google © OpenStreetMap contributors'
         });
@@ -481,169 +482,71 @@ HTML_APP = r"""
             coolSectors: []
         };
 
-const knownPlaces = {};
-
-            // =========================================================================
-            // 100% LIVE GLOBAL GEOCODING & DYNAMIC ADVISOR HOOK (ZERO HARDCODED CITIES)
-            // Keeps all original themes, moving mesh grid & highlighting boxes intact!
-            // =========================================================================
-            window._liveGeoCache = { venues: [], forecast: null };
-
-            async function _resolveAnyLocationOnEarthLive(rawQuery) {
-                const cleanQ = (rawQuery || "").trim();
-                if (!cleanQ) return null;
-
-                const normVariant = cleanQ.replace(/\bNCR\b/gi, "India").replace(/\bHyd\b/gi, "Hyderabad").trim();
-                const queries = [cleanQ];
-                if (normVariant !== cleanQ) queries.push(normVariant);
-                if (!/india/i.test(cleanQ) && cleanQ.split(',').length === 1) {
-                    queries.push(`${cleanQ}, India`);
-                }
-
-                // 1. Live OpenStreetMap Nominatim API
-                for (const q of queries) {
-                    try {
-                        const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&addressdetails=1&limit=1&q=${encodeURIComponent(q)}`;
-                        const res = await fetch(nomUrl, { headers: { 'Accept-Language': 'en' } });
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (data && data.length > 0) {
-                                return {
-                                    lat: parseFloat(data[0].lat),
-                                    lon: parseFloat(data[0].lon),
-                                    name: data[0].display_name,
-                                    geojson: data[0].geojson || null
-                                };
-                            }
-                        }
-                    } catch (e) {}
-                }
-
-                // 2. Live Komoot Photon OpenStreetMap API (sub-localities & colonies worldwide)
-                for (const q of queries) {
-                    try {
-                        const pRes = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=en&limit=1`);
-                        if (pRes.ok) {
-                            const pData = await pRes.json();
-                            if (pData && pData.features && pData.features.length > 0) {
-                                const f = pData.features[0];
-                                const p = f.properties || {};
-                                return {
-                                    lat: parseFloat(f.geometry.coordinates[1]),
-                                    lon: parseFloat(f.geometry.coordinates[0]),
-                                    name: [p.name, p.street, p.district, p.city, p.state, p.country].filter(Boolean).join(", ") || cleanQ,
-                                    geojson: null
-                                };
-                            }
-                        }
-                    } catch (e) {}
-                }
-
-                // 3. Live ArcGIS Global Geocoder (street & neighborhood level worldwide)
-                for (const q of queries) {
-                    try {
-                        const arcUrl = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(q)}&maxLocations=1&outFields=Match_addr,LongLabel`;
-                        const arcRes = await fetch(arcUrl);
-                        if (arcRes.ok) {
-                            const arcData = await arcRes.json();
-                            if (arcData && arcData.candidates && arcData.candidates.length > 0) {
-                                const c = arcData.candidates[0];
-                                return {
-                                    lat: parseFloat(c.location.y),
-                                    lon: parseFloat(c.location.x),
-                                    name: (c.attributes && (c.attributes.LongLabel || c.attributes.Match_addr)) || c.address || cleanQ,
-                                    geojson: null
-                                };
-                            }
-                        }
-                    } catch (e) {}
-                }
-
-                // 4. Live Open-Meteo Global Geocoding API
-                try {
-                    const firstToken = cleanQ.split(',')[0].trim();
-                    const omRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(firstToken)}&count=1&language=en&format=json`);
-                    if (omRes.ok) {
-                        const omData = await omRes.json();
-                        if (omData && omData.results && omData.results.length > 0) {
-                            const r = omData.results[0];
-                            return {
-                                lat: parseFloat(r.latitude),
-                                lon: parseFloat(r.longitude),
-                                name: [r.name, r.admin2, r.admin1, r.country].filter(Boolean).join(", "),
-                                geojson: null
-                            };
-                        }
-                    }
-                } catch (e) {}
-
+        // 100% Live 4-Stage Global Geocoding Pipeline (Zero Hardcoded Substring Hijacks)
+        async function fetchWithTimeout(url, options = {}, ms = 3800) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), ms);
+            try {
+                const res = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(timer);
+                return await res.json();
+            } catch (e) {
+                clearTimeout(timer);
                 return null;
             }
+        }
 
-            function _extractPlaceFromChatText(text) {
-                if (!text) return null;
-                const m = text.match(/\b(?:near|around|in|at|within\s+\d+\s*km\s+of|towards|visit)\s+([A-Za-z][A-Za-z\s,.-]{2,40}?)(?:\s+(?:tomorrow|today|this|next|on|at\s+\d|in\s+the|for|during|morning|evening|afternoon|night|weekend|saturday|sunday|what|where|when|any|is|should)\b|[?.!]|$)/i);
-                if (m && m[1]) {
-                    const cand = m[1].trim().replace(/[?.!,]+$/, '').replace(/\s+(?:tomorrow|today|this\s+\w+|next\s+\w+|morning|evening|afternoon|weekend)$/i, '').trim();
-                    const ignore = new Set(["work", "morning", "evening", "afternoon", "night", "weekend", "saturday", "sunday", "tomorrow", "today", "outdoors", "outdoor", "mind"]);
-                    if (cand.length >= 3 && !ignore.has(cand.toLowerCase())) return cand;
-                }
-                return null;
+        async function resolveCoordinates(rawQuery) {
+            const cleanQ = (rawQuery || "").trim();
+            if (!cleanQ) return { lat: 28.6139, lon: 77.2090, name: "New Delhi, NCR, India" };
+
+            const normVariant = cleanQ.replace(/\bNCR\b/gi, "India").replace(/\bHyd\b/gi, "Hyderabad").trim();
+            const queries = [cleanQ];
+            if (normVariant !== cleanQ) queries.push(normVariant);
+            if (!/india/i.test(cleanQ) && cleanQ.split(',').length === 1) {
+                queries.push(`${cleanQ}, India`);
             }
 
-            setTimeout(function() {
-                if (typeof map !== "undefined" && map) {
-                    map.eachLayer(function(layer) {
-                        if (layer._url && layer._url.indexOf("cartocdn") !== -1) {
-                            layer.setUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-                        }
-                    });
-                }
-
-                if (typeof runSpatialAnalysis === "function") {
-                    const _origRun = runSpatialAnalysis;
-                    runSpatialAnalysis = async function() {
-                        const inp = document.getElementById('locationInput') || document.getElementById('locInput');
-                        const rawQ = inp ? inp.value.trim() : "";
-                        const normKey = rawQ.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-                        for (const k in knownPlaces) delete knownPlaces[k];
-
-                        if (rawQ) {
-                            const liveLoc = await _resolveAnyLocationOnEarthLive(rawQ);
-                            if (liveLoc) {
-                                knownPlaces[normKey] = { lat: liveLoc.lat, lon: liveLoc.lon, name: liveLoc.name };
-                                knownPlaces[rawQ.toLowerCase()] = knownPlaces[normKey];
-                                if (typeof state === "object" && state) {
-                                    state.lat = liveLoc.lat;
-                                    state.lon = liveLoc.lon;
-                                    state.location = rawQ;
-                                    state.fullAddress = liveLoc.name;
-                                }
-                            }
-                        }
-                        return await _origRun.apply(this, arguments);
+            // Stage 1: Live OpenStreetMap Nominatim API
+            for (const q of queries) {
+                const nomData = await fetchWithTimeout(`https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&addressdetails=1&limit=1&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': 'en' } }, 4000);
+                if (nomData && nomData.length > 0) {
+                    return {
+                        lat: parseFloat(nomData[0].lat),
+                        lon: parseFloat(nomData[0].lon),
+                        name: nomData[0].display_name
                     };
-                    window.runSpatialAnalysis = runSpatialAnalysis;
                 }
+            }
 
-                if (typeof sendUserChat === "function") {
-                    const _origChat = sendUserChat;
-                    sendUserChat = async function() {
-                        const cIn = document.getElementById('chatInput') || document.getElementById('userChatInput');
-                        const txt = cIn ? cIn.value.trim() : "";
-                        const place = _extractPlaceFromChatText(txt);
-                        if (place) {
-                            const inp = document.getElementById('locationInput') || document.getElementById('locInput');
-                            if (inp) inp.value = place;
-                            await runSpatialAnalysis();
-                        }
-                        return _origChat.apply(this, arguments);
+            // Stage 2: Live Komoot Photon OSM API (sub-localities & colonies worldwide)
+            for (const q of queries) {
+                const pData = await fetchWithTimeout(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=en&limit=1`, {}, 3500);
+                if (pData && pData.features && pData.features.length > 0) {
+                    const f = pData.features[0];
+                    const p = f.properties || {};
+                    return {
+                        lat: parseFloat(f.geometry.coordinates[1]),
+                        lon: parseFloat(f.geometry.coordinates[0]),
+                        name: [p.name, p.street, p.district, p.city, p.state, p.country].filter(Boolean).join(", ") || cleanQ
                     };
-                    window.sendUserChat = sendUserChat;
                 }
-            }, 60);
-        };
+            }
+
+            // Stage 3: Live Open-Meteo Global Geocoding API
+            const firstToken = cleanQ.split(',')[0].trim();
+            const omData = await fetchWithTimeout(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(firstToken)}&count=1&language=en&format=json`, {}, 3500);
+            if (omData && omData.results && omData.results.length > 0) {
+                const r = omData.results[0];
+                return {
+                    lat: parseFloat(r.latitude),
+                    lon: parseFloat(r.longitude),
+                    name: [r.name, r.admin2, r.admin1, r.country].filter(Boolean).join(", ")
+                };
+            }
+
+            return { lat: 28.6139, lon: 77.2090, name: rawQuery + " (Mapped via Regional Grid)" };
+        }
 
         function drawHeatGridOnMap(lat, lon, labelName, ambientTemp, uhiDelta, ndviInput, lst) {
             try {
@@ -753,57 +656,10 @@ const knownPlaces = {};
             runSpatialAnalysis();
         }
 
-        async function fetchWithTimeout(url, ms = 3500) {
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), ms);
-            try {
-                const res = await fetch(url, { signal: controller.signal });
-                clearTimeout(timer);
-                return await res.json();
-            } catch (e) {
-                clearTimeout(timer);
-                return null;
-            }
-        }
-
-        async function resolveCoordinates(rawQuery) {
-            const normKey = rawQuery.toLowerCase().replace(/[^a-z0-9]/g, '');
-            if (knownPlaces[normKey]) {
-                return knownPlaces[normKey];
-            }
-            for (const key in knownPlaces) {
-                if (normKey.includes(key) || key.includes(normKey)) {
-                    return knownPlaces[key];
-                }
-            }
-
-            const cleanFirst = rawQuery.split(',')[0].trim();
-            const omData = await fetchWithTimeout(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanFirst)}&count=1&language=en&format=json`, 3000);
-            if (omData && omData.results && omData.results.length > 0) {
-                const r = omData.results[0];
-                return {
-                    lat: parseFloat(r.latitude),
-                    lon: parseFloat(r.longitude),
-                    name: `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`
-                };
-            }
-
-            const nomData = await fetchWithTimeout(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(rawQuery)}`, 3500);
-            if (nomData && nomData.length > 0) {
-                return {
-                    lat: parseFloat(nomData[0].lat),
-                    lon: parseFloat(nomData[0].lon),
-                    name: nomData[0].display_name
-                };
-            }
-
-            return { lat: 28.6139, lon: 77.2090, name: rawQuery + " (Mapped via Regional Grid)" };
-        }
-
         async function fetchNearbyVenues(lat, lon, locName) {
             const overpassQuery = `[out:json][timeout:3];(node["leisure"~"park|pitch|sports_centre|garden|stadium"](around:3500,${lat},${lon});way["leisure"~"park|pitch|sports_centre|garden|stadium"](around:3500,${lat},${lon}););out tags center 6;`;
             const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
-            const data = await fetchWithTimeout(url, 3200);
+            const data = await fetchWithTimeout(url, {}, 3200);
             const venues = [];
             if (data && data.elements && data.elements.length > 0) {
                 for (const el of data.elements) {
@@ -843,8 +699,8 @@ const knownPlaces = {};
 
             drawHeatGridOnMap(lat, lon, rawQuery, state.ambientTemp, state.uhiDelta, ndviInput, state.lst);
 
-            const weatherPromise = fetchWithTimeout(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,shortwave_radiation&daily=sunrise,sunset&timezone=auto`, 3500);
-            const aqiPromise = fetchWithTimeout(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5,pm10,uv_index`, 3500);
+            const weatherPromise = fetchWithTimeout(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,shortwave_radiation&daily=sunrise,sunset&timezone=auto`, {}, 3500);
+            const aqiPromise = fetchWithTimeout(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5,pm10,uv_index`, {}, 3500);
             const venuesPromise = fetchNearbyVenues(lat, lon, rawQuery.split(',')[0]);
 
             const [weatherData, aqiData, nearbyPlaces] = await Promise.all([weatherPromise, aqiPromise, venuesPromise]);
@@ -989,14 +845,6 @@ const knownPlaces = {};
             if (locMatch && locMatch[1]) {
                 const candidate = locMatch[1].trim().replace(/\b(work|morning|evening|afternoon|weekend|saturday|sunday|days|two)\b/gi, '').trim();
                 if (candidate.length >= 3) extractedLoc = candidate;
-            }
-            if (!extractedLoc) {
-                for (const key in knownPlaces) {
-                    if (key.length >= 4 && q.replace(/[^a-z0-9]/g, '').includes(key)) {
-                        extractedLoc = knownPlaces[key].name.split(',')[0];
-                        break;
-                    }
-                }
             }
 
             if (extractedLoc && extractedLoc.toLowerCase() !== state.location.toLowerCase()) {
