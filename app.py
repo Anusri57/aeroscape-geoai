@@ -3,7 +3,7 @@ import urllib.parse
 import urllib.request
 import streamlit as st
 import streamlit.components.v1 as components
-
+ 
 st.set_page_config(
     page_title="AeroScape GeoAI — Outdoor Activity Decision Intelligence",
     page_icon="🌍",
