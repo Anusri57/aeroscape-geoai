@@ -14,20 +14,9 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-        #MainMenu {visibility: hidden;}
-        header {visibility: hidden;}
-        footer {visibility: hidden;}
-        .block-container {
-            padding-top: 0rem !important;
-            padding-bottom: 0rem !important;
-            padding-left: 0rem !important;
-            padding-right: 0rem !important;
-            max-width: 100% !important;
-        }
-        iframe {
-            border: none !important;
-            width: 100% !important;
-        }
+        #MainMenu, header, footer {visibility: hidden;}
+        .block-container {padding: 0rem !important; max-width: 100% !important;}
+        iframe {border: none !important; width: 100% !important;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -39,700 +28,384 @@ HTML_APP = r"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AeroScape GeoAI — Outdoor Activity Decision Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #070b14;
-            --bg-card: #0f172a;
-            --bg-panel: #131c31;
-            --border: rgba(56, 189, 248, 0.18);
-            --accent: #06b6d4;
-            --accent-bright: #22d3ee;
-            --emerald: #10b981;
-            --amber: #f59e0b;
-            --rose: #f43f5e;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(circle at 15% 15%, #0f1f38 0%, #070b14 60%);
-            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #311042, #065f46, #1e3a8a);
+            background-size: 500% 500%;
+            animation: auroraFlow 16s ease infinite;
+            color: #f8fafc;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
             min-height: 100vh;
             padding: 16px 20px 32px 20px;
-            overflow-x: hidden;
         }
-        .top-nav {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(19, 28, 49, 0.92));
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px 20px;
-            margin-bottom: 14px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        @keyframes auroraFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .brand-wrap {
-            display: flex;
-            align-items: center;
-            gap: 14px;
+        h1, h2, h3, .display-font { font-family: 'Space Grotesk', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        @keyframes floatPacket {
+            0% { transform: translateY(0px) translateX(0px); opacity: 0.35; }
+            50% { transform: translateY(-28px) translateX(18px); opacity: 0.85; }
+            100% { transform: translateY(0px) translateX(0px); opacity: 0.35; }
         }
-        .brand-logo {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #06b6d4, #3b82f6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 0 18px rgba(6, 182, 212, 0.45);
-        }
-        .brand-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            background: linear-gradient(90deg, #ffffff, #67e8f9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .brand-sub {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-        .badge-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .sys-badge {
-            font-size: 0.72rem;
-            font-weight: 600;
-            padding: 5px 11px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            color: #bae6fd;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-        }
-        .sys-badge.live {
-            background: rgba(16, 185, 129, 0.14);
-            border-color: rgba(16, 185, 129, 0.45);
-            color: #6ee7b7;
-        }
-        .pulse-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #10b981;
-            box-shadow: 0 0 8px #10b981;
-            animation: pulse 1.6s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.35); opacity: 0.55; }
-        }
-        .control-bar {
-            display: grid;
-            grid-template-columns: 2.2fr 1.1fr 1.1fr 0.9fr auto auto;
-            gap: 10px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 12px 14px;
-            margin-bottom: 12px;
-            align-items: end;
-        }
-        @media (max-width: 1100px) {
-            .control-bar { grid-template-columns: 1fr 1fr; }
-        }
-        .ctrl-field label {
-            display: block;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #94a3b8;
-            margin-bottom: 5px;
-        }
-        .ctrl-field input, .ctrl-field select {
-            width: 100%;
-            background: #080d1a;
-            border: 1px solid rgba(148, 163, 184, 0.28);
-            color: #f8fafc;
-            padding: 9px 12px;
-            border-radius: 9px;
-            font-size: 0.85rem;
-            font-family: inherit;
-            outline: none;
-            transition: border 0.2s;
-        }
-        .ctrl-field input:focus, .ctrl-field select:focus {
-            border-color: var(--accent-bright);
-            box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #06b6d4, #2563eb);
-            color: #fff;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 9px;
-            font-weight: 700;
-            font-size: 0.84rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-            height: 38px;
-        }
-        .btn-primary:hover {
-            filter: brightness(1.12);
-            transform: translateY(-1px);
-        }
-        .btn-secondary {
-            background: rgba(30, 41, 59, 0.9);
-            color: #e2e8f0;
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            padding: 9px 14px;
-            border-radius: 9px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            cursor: pointer;
-            height: 38px;
-            white-space: nowrap;
-        }
-        .quick-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-            margin-bottom: 14px;
-        }
-        .chip-label {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            margin-right: 4px;
-        }
-        .loc-chip {
-            font-size: 0.72rem;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(56, 189, 248, 0.22);
-            color: #cbd5e1;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .loc-chip:hover {
-            border-color: var(--accent-bright);
-            color: #fff;
-            background: rgba(6, 182, 212, 0.18);
-        }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            margin-bottom: 14px;
-        }
-        @media (max-width: 1150px) {
-            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-        .metric-card {
-            background: linear-gradient(160deg, rgba(15, 23, 42, 0.95), rgba(19, 28, 49, 0.85));
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 11px 13px;
-            position: relative;
-            overflow: hidden;
-        }
-        .metric-label {
-            font-size: 0.69rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-        }
-        .metric-val {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.28rem;
-            font-weight: 800;
-            margin: 4px 0 2px 0;
-            color: #f8fafc;
-        }
-        .metric-sub {
-            font-size: 0.71rem;
-            color: #94a3b8;
-        }
-        .workspace-grid {
-            display: grid;
-            grid-template-columns: 1.38fr 1fr;
-            gap: 14px;
-            align-items: start;
-        }
-        @media (max-width: 1100px) {
-            .workspace-grid { grid-template-columns: 1fr; }
-        }
-        .panel-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-        }
-        .map-header {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .map-title {
-            font-size: 1.02rem;
-            font-weight: 800;
-            color: #f8fafc;
-        }
-        .map-subtitle {
-            font-size: 0.77rem;
-            color: #38bdf8;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-        .map-btn-row {
-            display: flex;
-            gap: 7px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        .map-toggle-btn {
-            background: #1e293b;
-            color: #e2e8f0;
-            border: 1px solid rgba(148, 163, 184, 0.25);
+        .data-packet {
+            position: absolute;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
             padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.76rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .map-toggle-btn.active {
-            background: #0284c7;
-            border-color: #38bdf8;
-            color: #fff;
-        }
-        .map-toggle-btn.mesh-btn {
-            background: rgba(225, 29, 72, 0.22);
-            border-color: rgba(244, 63, 94, 0.45);
-            color: #fda4af;
-        }
-        #map {
-            width: 100%;
-            height: 495px;
-            border-radius: 12px;
-            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: #38bdf8;
+            pointer-events: none;
+            animation: floatPacket 8s ease-in-out infinite;
             z-index: 1;
         }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-14px) translateX(10px); }
+        }
+        .floating-blob { animation: floatSlow 6s ease-in-out infinite; }
+
+        .glass-bento {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            border-radius: 22px;
+            padding: 22px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            z-index: 5;
+        }
+        .glass-bento:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px -10px rgba(56, 189, 248, 0.25);
+            border-color: rgba(56, 189, 248, 0.6);
+        }
+
+        #map { height: 480px; width: 100%; border-radius: 16px; z-index: 10; }
+
         .mesh-cell-label {
-            background: rgba(15, 23, 42, 0.88);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            border-radius: 5px;
-            color: #fff;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            line-height: 1.15;
-            padding: 2px 4px;
-            text-align: center;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.45);
-            pointer-events: none;
-        }
-        .map-footer-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(148, 163, 184, 0.14);
-            font-size: 0.74rem;
-            color: #cbd5e1;
-        }
-        .legend-pills {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .leg-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .leg-swatch {
-            width: 11px;
-            height: 11px;
-            border-radius: 3px;
-            display: inline-block;
-        }
-        .advisor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .advisor-title {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: #ffffff;
-        }
-        .advisor-sub {
-            font-size: 0.73rem;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-        .live-rag-pill {
-            background: rgba(16, 185, 129, 0.16);
-            border: 1px solid rgba(16, 185, 129, 0.5);
-            color: #34d399;
-            font-size: 0.68rem;
-            font-weight: 800;
-            padding: 4px 9px;
-            border-radius: 6px;
-            letter-spacing: 0.04em;
-            white-space: nowrap;
-        }
-        .intent-pills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-        .intent-btn {
-            background: #172036;
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            color: #e2e8f0;
-            font-size: 0.73rem;
-            font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .intent-btn:hover {
-            border-color: var(--accent-bright);
-            background: rgba(6, 182, 212, 0.15);
-        }
-        .telemetry-proof-box {
-            background: rgba(15, 23, 42, 0.9);
-            border-left: 3px solid #06b6d4;
-            border-radius: 8px;
-            padding: 9px 11px;
-            font-size: 0.76rem;
-            line-height: 1.45;
-            color: #e2e8f0;
-            margin-bottom: 10px;
-        }
-        .chat-stream {
-            height: 325px;
-            overflow-y: auto;
-            background: #080d19;
-            border: 1px solid rgba(56, 189, 248, 0.18);
-            border-radius: 12px;
-            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .msg-user {
-            align-self: flex-end;
-            background: linear-gradient(135deg, #06b6d4, #0284c7);
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
             color: #ffffff;
-            font-weight: 600;
-            font-size: 0.8rem;
-            padding: 8px 13px;
-            border-radius: 14px 14px 3px 14px;
-            max-width: 86%;
-            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.95);
+            pointer-events: none;
+            line-height: 1.15;
+            text-align: center;
         }
-        .msg-bot {
-            align-self: flex-start;
-            background: #111a2e;
-            border: 1px solid rgba(56, 189, 248, 0.22);
-            color: #f1f5f9;
-            font-size: 0.8rem;
-            line-height: 1.52;
-            padding: 11px 13px;
-            border-radius: 14px 14px 14px 3px;
-            max-width: 96%;
-        }
-        .chat-input-row {
-            display: flex;
-            gap: 8px;
-        }
-        .chat-input-row input {
-            flex: 1;
-            background: #080d19;
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            color: #fff;
-            padding: 10px 13px;
-            border-radius: 10px;
-            font-size: 0.82rem;
-            outline: none;
-        }
-        .chat-send-btn {
-            background: #06b6d4;
-            color: #041019;
-            font-weight: 800;
-            border: none;
-            padding: 0 18px;
-            border-radius: 10px;
-            font-size: 0.83rem;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .chat-send-btn:hover {
-            background: #22d3ee;
-        }
-        .example-prompts-bar {
-            margin-top: 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        .ex-pill {
-            font-size: 0.68rem;
-            background: rgba(30, 41, 59, 0.75);
-            border: 1px solid rgba(148, 163, 184, 0.22);
-            color: #bae6fd;
-            padding: 3px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .ex-pill:hover {
-            background: rgba(6, 182, 212, 0.2);
-            border-color: #22d3ee;
-        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="relative">
 
-    <div class="top-nav">
-        <div class="brand-wrap">
-            <div class="brand-logo">🌍</div>
+    <!-- FLOATING DATA PACKETS (MOVING THEMES) -->
+    <div class="data-packet" style="top: 12%; left: 4%; animation-delay: 0s;">🛰️ OPEN-METEO + OVERPASS LIVE</div>
+    <div class="data-packet" style="top: 28%; right: 6%; animation-delay: 2s;">🌿 QWEN2.5-1.5B SLM GROUNDED</div>
+    <div class="data-packet" style="top: 65%; left: 6%; animation-delay: 4s;">⚡ LIVE AQI & WIND VECTORS</div>
+    <div class="data-packet" style="top: 82%; right: 10%; animation-delay: 1.5s;">📍 OSRM TRAVEL TIME ACTIVE</div>
+
+    <!-- TOP NAVIGATION BAR -->
+    <nav class="max-w-7xl mx-auto flex flex-wrap items-center justify-between bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-full px-6 py-3 mb-6 shadow-lg relative z-10">
+        <div class="flex items-center gap-3">
+            <span class="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-ping"></span>
+            <span class="display-font font-bold text-lg tracking-tight text-white">AEROSCAPE <span class="text-cyan-400">×</span> GLOBAL SPATIAL LABS</span>
+            <span class="hidden sm:inline-block text-xs mono bg-cyan-950 text-cyan-300 border border-cyan-800 px-3 py-1 rounded-full">SLM: Qwen2.5-1.5B-Instruct (≤3B)</span>
+        </div>
+        <div class="flex items-center gap-4 text-xs font-semibold text-slate-300">
+            <span id="liveClock" class="mono bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">Loading IST...</span>
+            <span class="px-3 py-1.5 rounded-full bg-emerald-950 text-emerald-300 font-bold border border-emerald-800">● 100% LIVE API GROUNDED</span>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION WITH 3D WIREFRAME GLOBE -->
+    <section class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-6 bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden z-10">
+        <div class="lg:col-span-7 z-10">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-800 text-cyan-300 text-xs font-bold tracking-wide uppercase mb-3">
+                🎯 Outdoor Activity Advisor & Microclimate Intelligence
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3">
+                Where & when to head outdoors, <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-rose-400">backed by live data.</span>
+            </h1>
+            <p class="text-slate-300 text-sm md:text-base mb-5 max-w-2xl leading-relaxed">
+                Powered by a ≤3B Open Small Language Model reasoning over live OpenStreetMap Overpass venues, Open-Meteo weather & air quality (PM2.5/AQI), wind vectors, and personal health profiles.
+            </p>
+
+            <!-- INTERACTIVE CONTROL BAR -->
+            <div class="bg-slate-950/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-inner grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                <div class="md:col-span-4">
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">📍 Any Location on Earth</label>
+                    <input id="locationInput" type="text" value="New Delhi, NCR" placeholder="Type any area & press Enter..." 
+                        onkeydown="if(event.key==='Enter') runSpatialAnalysis()"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">🏃 Activity (10 Profiles)</label>
+                    <select id="activitySelect" onchange="runSpatialAnalysis()" class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900 cursor-pointer">
+                        <option value="Running">Running / Jogging</option>
+                        <option value="Cycling" selected>Cycling / Commute</option>
+                        <option value="Walking">Morning / Evening Walk</option>
+                        <option value="Cricket">Cricket Match</option>
+                        <option value="Football">Football / Turf Sports</option>
+                        <option value="Tennis">Outdoor Tennis</option>
+                        <option value="Golf">Golf Session</option>
+                        <option value="Hiking">Hiking / Nature Trail</option>
+                        <option value="Photography">Sunset Photography</option>
+                        <option value="Party">Outdoor Birthday Party</option>
+                    </select>
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">🩺 Health Profile</label>
+                    <select id="healthSelect" onchange="runSpatialAnalysis()" class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900 cursor-pointer">
+                        <option value="Standard">Standard Adult</option>
+                        <option value="Asthma">Mild Asthma / Respiratory</option>
+                        <option value="Seniors">Seniors / Parents (65+)</option>
+                        <option value="Children">Children / Kids Match</option>
+                        <option value="Pregnancy">Pregnancy / Heat-Sensitive</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">📏 Radius</label>
+                    <select id="radiusSelect" onchange="runSpatialAnalysis()" class="w-full px-3 py-2 rounded-xl border border-slate-700 text-sm text-white bg-slate-900 cursor-pointer">
+                        <option value="5">5 km</option>
+                        <option value="15" selected>15 km</option>
+                        <option value="40">40 km</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- INSTANT TEST LOCATION CHIPS -->
+            <div class="flex flex-wrap items-center gap-1.5 mt-3">
+                <span class="text-xs text-slate-400 font-semibold mr-1">Quick Jump:</span>
+                <button type="button" onclick="quickSelectLocation('New Delhi, NCR')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Delhi NCR</button>
+                <button type="button" onclick="quickSelectLocation('Gachibowli, Hyderabad')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Gachibowli, Hyd</button>
+                <button type="button" onclick="quickSelectLocation('Secunderabad, Telangana')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Secunderabad</button>
+                <button type="button" onclick="quickSelectLocation('Banjara Hills, Hyderabad')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Banjara Hills</button>
+                <button type="button" onclick="quickSelectLocation('Koregaon Park, Pune')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Koregaon Park</button>
+                <button type="button" onclick="quickSelectLocation('Whitefield, Bengaluru')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Whitefield, BLR</button>
+                <button type="button" onclick="quickSelectLocation('Lonavala')" class="text-xs bg-slate-800/90 hover:bg-cyan-600 text-cyan-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition cursor-pointer">Lonavala</button>
+            </div>
+
+            <p id="resolvedAddressBar" class="text-xs mono text-cyan-400 mt-2.5">📍 Active Boundary: Syncing live coordinates...</p>
+        </div>
+
+        <!-- 3D WIREFRAME GLOBE CANVAS -->
+        <div class="lg:col-span-5 flex flex-col items-center justify-center relative">
+            <canvas id="globeCanvas" width="280" height="280" class="floating-blob"></canvas>
+            <span class="text-xs mono text-slate-400 mt-1">3D Geodesic Orbital Telemetry Mesh</span>
+        </div>
+    </section>
+
+    <!-- 6 ADVANCED TELEMETRY CARDS STRIP -->
+    <section class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6 relative z-10">
+        <div class="glass-bento border-rose-500/30 p-4">
+            <p class="text-xs font-bold uppercase text-slate-400">🌡️ LST Temp</p>
+            <h2 id="mLst" class="text-2xl font-extrabold text-white my-1 mono">--°C</h2>
+            <p id="mAmb" class="text-xs text-slate-400">Ambient Air: --°C</p>
+        </div>
+        <div class="glass-bento border-amber-500/30 p-4">
+            <p class="text-xs font-bold uppercase text-slate-400">🔥 UHI Delta</p>
+            <h2 id="mUhi" class="text-2xl font-extrabold text-amber-300 my-1 mono">--°C</h2>
+            <p id="mRisk" class="text-xs text-slate-400">UHI Intensity</p>
+        </div>
+        <div class="glass-bento border-emerald-500/30 p-4">
+            <p class="text-xs font-bold uppercase text-slate-400">🫁 US AQI & PM2.5</p>
+            <h2 id="mAqi" class="text-2xl font-extrabold text-emerald-300 my-1 mono">-- AQI</h2>
+            <p id="mPm25" class="text-xs text-slate-400">PM2.5: -- µg/m³</p>
+        </div>
+        <div class="glass-bento border-cyan-500/30 p-4">
+            <p class="text-xs font-bold uppercase text-slate-400">☀️ UV & Solar</p>
+            <h2 id="mUv" class="text-2xl font-extrabold text-cyan-300 my-1 mono">UV --</h2>
+            <p id="mSolar" class="text-xs text-slate-400">Shortwave: -- W/m²</p>
+        </div>
+        <div class="glass-bento border-indigo-500/30 p-4">
+            <p class="text-xs font-bold uppercase text-slate-400">💨 Wind & RH</p>
+            <h2 id="mWind" class="text-2xl font-extrabold text-indigo-300 my-1 mono">-- km/h</h2>
+            <p id="mHum" class="text-xs text-slate-400">RH: --%</p>
+        </div>
+        <div class="glass-bento border-purple-500/30 p-4">
+            <p class="text-xs font-bold uppercase text-slate-400">🌿 Canopy NDVI</p>
+            <h2 id="mNdvi" class="text-2xl font-extrabold text-purple-300 my-1 mono">-- NDVI</h2>
+            <p id="mVenueCount" class="text-xs text-slate-400">OSM Venues</p>
+        </div>
+    </section>
+
+    <!-- MAIN WORKSPACE: MAP + SLM ADVISOR CHATBOT -->
+    <section class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10 relative z-10">
+        
+        <!-- MAP SECTION -->
+        <div class="lg:col-span-7 glass-bento flex flex-col justify-between">
             <div>
-                <div class="brand-title">AeroScape GeoAI — Outdoor Activity Decision Intelligence</div>
-                <div class="brand-sub">Real-Time 25-Sector Microclimate Thermal Mesh • Spatial-Temporal RAG Advisor • Built for GeoAI Hackathon @ CSRE, IIT Bombay</div>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">🗺️ Live Locality Map & 25-Sector Heat Grid</h3>
+                        <p id="activeGridTitle" class="text-xs text-cyan-300 font-semibold">Active 5×5 Thermal Mesh (HIGH / MODERATE / COOL)</p>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" id="btnStreet" onclick="switchBaseMap('street')" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-cyan-600 text-white hover:bg-cyan-500 transition cursor-pointer">🗺️ Streets</button>
+                        <button type="button" id="btnSat" onclick="switchBaseMap('sat')" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700 transition cursor-pointer">🛰️ Satellite</button>
+                        <button type="button" onclick="toggleThermalMesh()" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-950 text-rose-300 border border-rose-800 hover:bg-rose-900 transition cursor-pointer">🔥 Toggle Mesh</button>
+                    </div>
+                </div>
+                <div id="map"></div>
+            </div>
+
+            <div class="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between text-xs text-slate-300 gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded-sm bg-rose-500 inline-block"></span> HIGH HEAT</span>
+                    <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded-sm bg-amber-400 inline-block"></span> MODERATE</span>
+                    <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded-sm bg-emerald-500 inline-block"></span> COOL ZONE</span>
+                </div>
+                <span id="clickedSectorInfo" class="mono text-cyan-400">Click any sector (A1–E5) for telemetry</span>
             </div>
         </div>
-        <div class="badge-group">
-            <span class="sys-badge live"><span class="pulse-dot"></span> 100% LIVE API TELEMETRY</span>
-            <a class="sys-badge" href="https://huggingface.co/Anusri1607/aeroscape-geoai-slm" target="_blank">🤗 Qwen2.5-1.5B-Instruct (≤3B)</a>
-            <span class="sys-badge">🗺️ Live OSM Nominatim + Overpass + OSRM</span>
-            <span class="sys-badge">⛅ Live Open-Meteo Forecast & US AQI</span>
-        </div>
-    </div>
 
-    <!-- CONTROL BAR WITH RADIUS & 6-CARD METRICS STRIP -->
-    <div class="control-bar">
-        <div class="ctrl-field">
-            <label>📍 Any Location on Earth (100% Live Global Geocoder)</label>
-            <input type="text" id="locationInput" value="New Delhi, NCR" placeholder="Type any street, colony, village, landmark, or city..." onkeydown="if(event.key==='Enter') runSpatialAnalysis();" />
-        </div>
-        <div class="ctrl-field">
-            <label>🏃 Outdoor Activity (10 Profiles)</label>
-            <select id="activitySelect" onchange="runSpatialAnalysis()">
-                <option value="Running">Running / Jogging</option>
-                <option value="Cycling" selected>Cycling / Commute</option>
-                <option value="Walking">Morning / Evening Walk</option>
-                <option value="Cricket">Cricket Match</option>
-                <option value="Football">Football / Turf Sports</option>
-                <option value="Tennis">Outdoor Tennis</option>
-                <option value="Golf">Golf Session</option>
-                <option value="Hiking">Hiking / Nature Trail</option>
-                <option value="Photography">Sunset Photography</option>
-                <option value="Party">Outdoor Birthday Party / Gathering</option>
-            </select>
-        </div>
-        <div class="ctrl-field">
-            <label>🩺 Health & Vulnerability Profile</label>
-            <select id="healthSelect" onchange="runSpatialAnalysis()">
-                <option value="Standard">Standard Adult Profile</option>
-                <option value="Asthma">Mild Asthma / Respiratory</option>
-                <option value="Seniors">Seniors / Parents (65+)</option>
-                <option value="Children">Children / Kids Match</option>
-                <option value="Pregnancy">Pregnancy / Heat-Sensitive</option>
-            </select>
-        </div>
-        <div class="ctrl-field">
-            <label>📏 Venue Search Radius</label>
-            <select id="radiusSelect" onchange="runSpatialAnalysis()">
-                <option value="5">Within 5 km</option>
-                <option value="15" selected>Within 15 km</option>
-                <option value="40">Within 40 km</option>
-            </select>
-        </div>
-        <button class="btn-primary" id="analyzeBtn" onclick="runSpatialAnalysis()">⚡ Analyze Live Grid</button>
-        <button class="btn-secondary" onclick="window.print()">📄 Export PDF</button>
-    </div>
-
-    <div class="quick-chips">
-        <span class="chip-label">Sample Live Queries:</span>
-        <span class="loc-chip" onclick="quickSelectLocation('New Delhi, NCR')">New Delhi, NCR</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Gachibowli, Hyderabad')">Gachibowli, Hyd</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Secunderabad, Telangana')">Secunderabad</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Banjara Hills, Hyderabad')">Banjara Hills, Hyd</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Uppal, Hyderabad')">Uppal, Hyd</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Kukatpally, Hyderabad')">Kukatpally, Hyd</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Koregaon Park, Pune')">Koregaon Park, Pune</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Whitefield, Bengaluru')">Whitefield, Bengaluru</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Powai, Mumbai')">Powai, Mumbai</span>
-        <span class="loc-chip" onclick="quickSelectLocation('Lonavala, Maharashtra')">Lonavala</span>
-    </div>
-
-    <!-- 6-CARD ADVANCED TELEMETRY STRIP -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">🌡️ Land Surface Temp (LST)</div>
-            <div class="metric-val" id="mLst">--°C</div>
-            <div class="metric-sub" id="mAmb">Ambient Air: --°C</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">🔥 UHI Thermal Delta</div>
-            <div class="metric-val" id="mUhi">--°C</div>
-            <div class="metric-sub" id="mRisk">Calculating UHI Mesh...</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">🫁 Live US AQI & PM2.5</div>
-            <div class="metric-val" id="mAqi">-- AQI</div>
-            <div class="metric-sub" id="mPm25">PM2.5: -- µg/m³</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">☀️ UV Index & Solar Load</div>
-            <div class="metric-val" id="mUv">UV --</div>
-            <div class="metric-sub" id="mSolar">Shortwave: -- W/m²</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">💨 Wind Plume & Humidity</div>
-            <div class="metric-val" id="mWind">-- km/h</div>
-            <div class="metric-sub" id="mHum">Dir: -- • RH: --%</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">🌿 Canopy NDVI & Venues</div>
-            <div class="metric-val" id="mNdvi">-- NDVI</div>
-            <div class="metric-sub" id="mVenueCount">Live OSM Venues: Scanning...</div>
-        </div>
-    </div>
-
-    <!-- MAIN WORKSPACE -->
-    <div class="workspace-grid">
-        <div class="panel-card">
-            <div class="map-header">
+        <!-- CHATBOT SECTION -->
+        <div class="lg:col-span-5 glass-bento flex flex-col h-[580px]">
+            <div class="border-b border-slate-800 pb-3 mb-3 flex items-center justify-between">
                 <div>
-                    <div class="map-title">🗺️ Live Locality Map & 25-Sector Heat Grid</div>
-                    <div class="map-subtitle" id="activeGridTitle">Resolving live coordinates...</div>
+                    <h3 class="text-lg font-bold text-white">💬 GeoAI Activity Advisor (SLM)</h3>
+                    <p class="text-xs text-slate-400">Qwen2.5-1.5B-Instruct • Live OSM + Open-Meteo + AQI</p>
                 </div>
-                <div style="font-size:0.73rem; color:#94a3b8;" id="geocoderSourceBadge">Source: Live GIS Pipeline</div>
-            </div>
-            <div class="map-btn-row">
-                <button class="map-toggle-btn active" id="btnStreet" onclick="switchBaseMap('street')">🗺️ Colored Streets</button>
-                <button class="map-toggle-btn" id="btnSat" onclick="switchBaseMap('sat')">🛰️ Satellite</button>
-                <button class="map-toggle-btn mesh-btn" id="btnMesh" onclick="toggleThermalMesh()">🔥 Toggle Mesh</button>
-            </div>
-            <div id="map"></div>
-            <div class="map-footer-bar">
-                <div class="legend-pills">
-                    <span class="leg-item"><span class="leg-swatch" style="background:#ef4444;"></span> High Heat (UHI Hotspot)</span>
-                    <span class="leg-item"><span class="leg-swatch" style="background:#f59e0b;"></span> Moderate Sector</span>
-                    <span class="leg-item"><span class="leg-swatch" style="background:#10b981;"></span> Cool Green Buffer</span>
-                    <span class="leg-item"><span class="leg-swatch" style="background:#38bdf8;"></span> Live OSM Park/Venue</span>
-                </div>
-                <div id="clickedSectorInfo">Click any sector (A1–E5) to inspect micro-telemetry</div>
-            </div>
-        </div>
-
-        <div class="panel-card">
-            <div class="advisor-header">
-                <div>
-                    <div class="advisor-title">💬 GeoAI Activity Advisor (SLM)</div>
-                    <div class="advisor-sub">Qwen2.5-1.5B-Instruct • Live OSM + Open-Meteo + AQI + OSRM</div>
-                </div>
-                <span class="live-rag-pill">LIVE RAG</span>
+                <span class="text-xs mono px-2.5 py-1 bg-emerald-950 text-emerald-300 font-bold rounded-lg border border-emerald-800">LIVE RAG</span>
             </div>
 
-            <div class="intent-pills">
-                <button class="intent-btn" onclick="triggerQuickTab('best')">🎯 Best Place & Time</button>
-                <button class="intent-btn" onclick="triggerQuickTab('prep')">🎒 What to Prepare</button>
-                <button class="intent-btn" onclick="triggerQuickTab('avoid')">⚠️ When to Avoid</button>
-                <button class="intent-btn" onclick="triggerQuickTab('proof')">📊 Live Data Proof</button>
+            <div class="flex flex-wrap gap-1.5 mb-3">
+                <button type="button" onclick="triggerQuickTab('best')" class="text-xs bg-slate-800 hover:bg-cyan-600 text-slate-300 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer">🎯 Best Place & Time</button>
+                <button type="button" onclick="triggerQuickTab('prep')" class="text-xs bg-slate-800 hover:bg-cyan-600 text-slate-300 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer">🎒 What to Prepare</button>
+                <button type="button" onclick="triggerQuickTab('avoid')" class="text-xs bg-slate-800 hover:bg-rose-600 text-slate-300 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer">⚠️ When to Avoid</button>
+                <button type="button" onclick="triggerQuickTab('proof')" class="text-xs bg-slate-800 hover:bg-emerald-600 text-slate-300 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer">📊 Live Proof</button>
             </div>
 
-            <div class="telemetry-proof-box" id="liveTelemetrySummaryBox">
+            <div class="telemetry-proof-box text-xs" id="liveTelemetrySummaryBox">
                 Fetching live atmospheric, air quality, and OpenStreetMap spatial telemetry...
             </div>
 
-            <div class="chat-stream" id="chatBox"></div>
+            <div id="chatBox" class="flex-1 overflow-y-auto space-y-3 pr-2 text-xs"></div>
 
-            <div class="chat-input-row">
-                <input type="text" id="chatInput" placeholder="Ask free-form (e.g. 'Running tomorrow evening near Koregaon Park?')" onkeydown="if(event.key==='Enter') sendUserChat();" />
-                <button class="chat-send-btn" onclick="sendUserChat()">Send</button>
-            </div>
-
-            <div class="example-prompts-bar">
-                <span class="ex-pill" onclick="runEvaluatorPrompt('Where can I go running tomorrow evening near Koregaon Park?')">Running near Koregaon Park?</span>
-                <span class="ex-pill" onclick="runEvaluatorPrompt('Best time this weekend for a kids cricket match within 15 km of Whitefield?')">Kids cricket near Whitefield?</span>
-                <span class="ex-pill" onclick="runEvaluatorPrompt('I have mild asthma, where is good for a morning walk near Powai in the next two days?')">Asthma walk near Powai?</span>
-                <span class="ex-pill" onclick="runEvaluatorPrompt('Is it okay to cycle to work at 8 AM?')">Cycle at 8 AM?</span>
-                <span class="ex-pill" onclick="runEvaluatorPrompt('Is Saturday or Sunday better for a hike near Lonavala?')">Sat vs Sun hike Lonavala?</span>
-                <span class="ex-pill" onclick="runEvaluatorPrompt('When is it safe for my parents to walk outdoors tomorrow in Gachibowli, Hyderabad?')">Parents walk Gachibowli?</span>
+            <div class="mt-3 pt-3 border-t border-slate-800 flex gap-2">
+                <input id="chatInput" type="text" placeholder="Ask free-form (e.g. 'Running tomorrow evening near Koregaon Park?')" 
+                    onkeydown="if(event.key==='Enter') sendUserChat()"
+                    class="flex-1 px-3 py-2 rounded-xl border border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-slate-900 text-white" />
+                <button type="button" onclick="sendUserChat()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs transition cursor-pointer">Send</button>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- ATTRIBUTION FOOTER -->
+    <footer class="max-w-7xl mx-auto text-center text-xs text-slate-400 mono py-3 border-t border-slate-800/80 relative z-10">
+        Data Sources Disclosed Live per Query: Map & Venues © OpenStreetMap contributors (Nominatim & Overpass API) | Weather & Air Quality: Open-Meteo Forecast & Air Quality APIs | Routing: OSRM | SLM Engine: Qwen/Qwen2.5-1.5B-Instruct (≤3B Open Weights on Hugging Face)
+    </footer>
 
     <script>
-        let state = {
-            location: "",
-            fullAddress: "",
-            activity: "Cycling",
-            health: "Standard",
-            radiusKm: 15,
-            lat: 28.6139,
-            lon: 77.2090,
-            ambientTemp: 0,
-            humidity: 0,
-            windSpeed: 0,
-            windDirDeg: 0,
-            windDirCard: "N",
-            solarRad: 0,
-            uvIndex: 0,
-            aqi: 0,
-            pm25: 0,
-            ndvi: 0,
-            albedo: 0,
-            uhiDelta: 0,
-            lst: 0,
-            hotspotSectors: [],
-            coolSectors: [],
-            sectorData: {},
-            liveVenues: [],
-            forecastDaily: null,
-            forecastHourly: null,
-            geocoderSource: "Live OSM Nominatim"
-        };
+        const INITIAL_URL_QUERY = __INITIAL_URL_QUERY__;
 
-        // Google Tiles (Zero API Key Required Watermarks)
+        function setText(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        }
+
+        function updateClock() {
+            const now = new Date();
+            setText('liveClock', now.toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+            }) + ' IST');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 3D Wireframe Globe Canvas Animation
+        const canvas = document.getElementById('globeCanvas');
+        const ctx = canvas.getContext('2d');
+        let angle = 0;
+
+        function drawGlobe() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const radius = 95;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(-0.35);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, radius + 32, 30, 0, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+            ctx.lineWidth = 1.8;
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(0.45);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, radius + 24, 36, 0, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(129, 140, 248, 0.4)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+            ctx.lineWidth = 1;
+            const numMeridians = 12;
+            for (let i = 0; i < numMeridians; i++) {
+                const phi = angle + (i * Math.PI) / numMeridians;
+                ctx.beginPath();
+                for (let theta = 0; theta <= Math.PI * 2; theta += 0.1) {
+                    const x3d = radius * Math.sin(theta) * Math.cos(phi);
+                    const y3d = radius * Math.cos(theta);
+                    const z3d = radius * Math.sin(theta) * Math.sin(phi);
+                    const px = cx + x3d;
+                    const py = cy + y3d * 0.95 + z3d * 0.15;
+                    if (theta === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+            }
+
+            for (let lat = -0.75; lat <= 0.75; lat += 0.375) {
+                const rLat = radius * Math.cos(lat * Math.PI / 2);
+                const yOffset = radius * Math.sin(lat * Math.PI / 2);
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + yOffset, rLat, rLat * 0.22, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            const nodeX = cx + Math.cos(angle * 2) * (radius + 30) * Math.cos(-0.35);
+            const nodeY = cy + Math.sin(angle * 2) * 30 * Math.sin(-0.35);
+            ctx.beginPath();
+            ctx.arc(nodeX, nodeY, 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fill();
+
+            angle += 0.008;
+            requestAnimationFrame(drawGlobe);
+        }
+        drawGlobe();
+
+        // Map Initialization with Google Tiles
         const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             maxZoom: 20, attribution: 'Map data &copy; Google © OpenStreetMap contributors'
         });
@@ -741,7 +414,7 @@ HTML_APP = r"""<!DOCTYPE html>
         });
 
         const map = L.map('map', {
-            center: [state.lat, state.lon],
+            center: [28.6139, 77.2090],
             zoom: 14,
             layers: [googleStreets]
         });
@@ -749,7 +422,7 @@ HTML_APP = r"""<!DOCTYPE html>
         const boundaryLayer = L.layerGroup().addTo(map);
         const gridLayer = L.layerGroup().addTo(map);
         const venueLayer = L.layerGroup().addTo(map);
-        let centerPin = L.marker([state.lat, state.lon]).addTo(map);
+        let centerPin = L.marker([28.6139, 77.2090]).addTo(map);
         let meshVisible = true;
 
         function switchBaseMap(mode) {
@@ -794,6 +467,7 @@ HTML_APP = r"""<!DOCTYPE html>
             }
         }
 
+        // 100% Live Global Geocoding Pipeline (Zero Hardcoded Substring Hijacks)
         async function resolveLocationLive(rawQuery) {
             const cleanQuery = (rawQuery || "").trim();
             if (!cleanQuery) return null;
