@@ -6,3 +6,5 @@ transformers
 folium
 streamlit-folium
 accelerate
+fastapi
+uvicorn
